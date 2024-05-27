@@ -3,6 +3,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from cashbox_app.models import Address, CashReport, CustomUser
 
 
+# Форма для страницы авторизации.
 class CustomAuthenticationForm(AuthenticationForm):
     username = forms.ModelChoiceField(
         queryset=CustomUser.objects.filter(is_active=True),
@@ -16,12 +17,19 @@ class CustomAuthenticationForm(AuthenticationForm):
         fields = ['username', 'password']
 
 
+# Для создания адреса или редактирования существующего.
 class AddressForm(forms.ModelForm):
     class Meta:
         model = Address
         fields = ['city', 'street', 'home']
 
 
+# Форма выбора адреса.
+class AddressSelectionForm(forms.Form):
+    addresses = forms.ModelChoiceField(queryset=Address.objects.all(), empty_label="Выберите адрес")
+
+
+# Форма редактирования кассового отчета.
 class CashReportForm(forms.ModelForm):
     class Meta:
         model = CashReport

@@ -48,8 +48,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):   # Пользовател
     last_name = models.CharField(max_length=100, verbose_name='Фамилия', blank=True, null=True)
     first_name = models.CharField(max_length=100, verbose_name='Имя', blank=True, null=True)
     patronymic = models.CharField(max_length=100, verbose_name='Отчество', blank=True, null=True)
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)  # Если не активен, то не сможет авторизоваться на сайте.
+    is_staff = models.BooleanField(default=False)  # Может ли войти в "админку".
 
     objects = CustomUserManager()
 

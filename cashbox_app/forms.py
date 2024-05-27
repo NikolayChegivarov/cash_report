@@ -38,3 +38,7 @@ class CashReportForm(forms.ModelForm):
             'introduced', 'interest_return', 'loans_issued', 'used_farming',
             'boss_took_it', 'cash_register_end', 'author', 'status'
         ]
+        widgets = {  # Эти поля доступны только для чтения.
+            'id_address': forms.Select(attrs={'readonly': 'readonly'}),
+            'author': forms.TextInput(attrs={'readonly': 'readonly'})
+        }

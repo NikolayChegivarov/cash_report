@@ -23,3 +23,5 @@ urlpatterns = [
     path('address-selection/', AddressSelectionView.as_view(), name='address_selection'),
     path('cash-report-form/', CashReportFormView.as_view(), name='cash_report_form'),
 ]
+
+# {% extends "base_generic.html" %}

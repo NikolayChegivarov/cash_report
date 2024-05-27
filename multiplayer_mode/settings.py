@@ -59,7 +59,7 @@ ROOT_URLCONF = 'multiplayer_mode.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'cashbox_app/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

@@ -25,7 +25,7 @@ class CustomUserManager(BaseUserManager):  # Переопределяю мето
         # Проверка наличия username, если его нет, выбрасывается исключение
         if not username:
             raise ValueError('Поле Имя пользователя должно быть установлено')
-        # Создание экземпляра пользователя с заданными параметрами
+        # Создание экземпляра пользователя с заданными параметрами.
         user = self.model(username=username, **extra_fields)
         # Установка пароля для пользователя
         user.set_password(password)

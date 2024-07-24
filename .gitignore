@@ -1,3 +1,4 @@
-config.py
-.idea/
+.venv
+.env
+/.idea/
 __pycache__/

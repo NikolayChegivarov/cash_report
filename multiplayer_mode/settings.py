@@ -12,7 +12,9 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 
-from config import password
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -81,11 +83,11 @@ WSGI_APPLICATION = 'multiplayer_mode.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'lombard',
+        'NAME': os.getenv('NAME_BD'),
         'HOST': 'localhost',
         'PORT': '5432',
         'USER': 'postgres',
-        'PASSWORD': password,
+        'PASSWORD': os.getenv('PASSWORD'),
         'OPTIONS': {
             'client_encoding': 'UTF8',
             'options': '-c search_path=lombards'

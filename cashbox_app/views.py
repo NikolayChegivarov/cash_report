@@ -5,6 +5,12 @@ from django.shortcuts import redirect
 from cashbox_app.forms import CustomAuthenticationForm, AddressForm, CashReportForm, AddressSelectionForm
 from cashbox_app.models import Address
 
+from django.views.generic import FormView
+from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .forms import MultiCashReportForm
+
+
 
 # Страница авторизации с переходом на страницу выбор адреса.
 class CustomLoginView(LoginView):
@@ -34,31 +40,48 @@ class AddressSelectionView(FormView):
 
 
 # Заполнение отчета.
-class CashReportFormView(FormView):
+class CashReportFormView(LoginRequiredMixin, FormView):
+    # Указывает имя шаблона для отображения формы
     template_name = 'cash_report_form.html'
-    form_class = CashReportForm
+    # Указывает класс формы, который будет использоваться
+    form_class = MultiCashReportForm
+    # URL, на который пользователь будет перенаправлен после успешной отправки формы
     success_url = reverse_lazy('report_submitted')
 
     def get_initial(self):
-
+        # Получает начальные значения из родительского класса
         initial = super().get_initial()
+        # Проверяет наличие ID выбранного адреса в сессии пользователя
         selected_address_id = self.request.session.get('selected_address_id')
+        # Если ID адрес существует, устанавливает его как начальное значение поля id_address
         if selected_address_id:
             initial['id_address'] = Address.objects.get(id=selected_address_id)
-        initial['author'] = self.request.user.username
+        # Устанавливает текущего пользователя как автора отчета
+        initial['author'] = self.request.user
+        # Возвращает словарь с начальными значениями
         return initial
 
     def get_form(self, form_class=None):
-        """Настраивает форму, отключая поля id_addressи author делая их доступными только для чтения."""
+        """Конфигурирует форму, отключая поля, которые не должны быть изменены."""
+        # Получает экземпляр формы из родительского класса
         form = super().get_form(form_class)
+        # Ограничивает queryset поля id_address только одним выбранным адресом
         form.fields['id_address'].queryset = Address.objects.filter(id=self.request.session.get('selected_address_id'))
+        # Удаляет пустую метку для поля id_address
         form.fields['id_address'].empty_label = None
+        # Отключает поле id_address для редактирования
         form.fields['id_address'].disabled = True
+        # Отключает поле author для редактирования
         form.fields['author'].disabled = True
+        # Возвращает настроенную форму
         return form
 
     def form_valid(self, form):
-        """Гарантирует, что выбранный адрес и вошедший в систему пользователь установлены правильно при отправке формы."""
+        """Обеспечивает правильное установление выбранного адреса и текущего пользователя при сохранении формы."""
+        # Устанавливает выбранный адрес для экземпляра формы
         form.instance.id_address = Address.objects.get(id=self.request.session.get('selected_address_id'))
+        # Устанавливает текущего пользователя как автора отчета
         form.instance.author = self.request.user
+        # Вызывает метод родительского класса для обработки валидной формы
         return super().form_valid(form)
+

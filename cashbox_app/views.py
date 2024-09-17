@@ -1,7 +1,7 @@
 from django.contrib.auth.views import LoginView
 from django.views.generic import TemplateView, FormView
 from django.urls import reverse_lazy
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from cashbox_app.forms import CustomAuthenticationForm, AddressForm, CashReportForm, AddressSelectionForm
 from cashbox_app.models import Address, CashReport
 
@@ -10,6 +10,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import MultiCashReportForm
 
+from django.views.generic.base import View
 
 
 # Страница авторизации с переходом на страницу выбор адреса.
@@ -76,15 +77,6 @@ class CashReportFormView(LoginRequiredMixin, FormView):
         # Возвращает настроенную форму
         return form
 
-    # def form_valid(self, form):
-    #     """Обеспечивает правильное установление выбранного адреса и текущего пользователя при сохранении формы."""
-    #     # Устанавливает выбранный адрес для экземпляра формы
-    #     form.instance.id_address = Address.objects.get(id=self.request.session.get('selected_address_id'))
-    #     # Устанавливает текущего пользователя как автора отчета
-    #     form.instance.author = self.request.user
-    #     # Вызывает метод родительского класса для обработки валидной формы
-    #     return super().form_valid(form)
-
     def form_valid(self, form):
         # Создайте новый экземпляр CashReport вручную.
         cash_report = CashReport.objects.create(
@@ -95,3 +87,19 @@ class CashReportFormView(LoginRequiredMixin, FormView):
         # При необходимости вы можете сохранить здесь данные формы.
 
         return super().form_valid(form)
+
+
+class ReportSubmittedView(FormView):
+    # Указывает имя шаблона для отображения формы
+    template_name = 'cash_report_form.html'
+
+
+    # URL, на который пользователь будет перенаправлен после успешной отправки формы
+    # "Сменить пользователя"
+    # success_url = reverse_lazy('login')
+    # # "Сменить адрес"
+    # success_url = reverse_lazy('address_selection.html')
+    # # "Новый день"
+    # success_url = reverse_lazy('cash_report_form.html')
+
+

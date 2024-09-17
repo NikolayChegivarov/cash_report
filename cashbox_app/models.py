@@ -84,25 +84,25 @@ class CashReport(models.Model):  # Кассовый отчет.
         choices=CashRegisterChoices.choices,
     )
     cash_balance_beginning = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name='Остаток денежных средств в начале', blank=False, null=False)
+        max_digits=10, decimal_places=2, verbose_name='Остаток денежных средств в начале', blank=False, null=True)
     introduced = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name='Внесено в кассу', blank=False, null=False, default=0.00)
+        max_digits=10, decimal_places=2, verbose_name='Внесено в кассу', blank=False, null=True, default=0.00)
     interest_return = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name='Средства от процентов с залога, возврата выданных займов',
-        blank=False, null=False, default=0.00)
+        blank=False, null=True, default=0.00)
     loans_issued = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name='Выдано займов', blank=False, null=False, default=0.00)
+        max_digits=10, decimal_places=2, verbose_name='Выдано займов', blank=False, null=True, default=0.00)
     used_farming = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name='На хоз. нужды, оплату труда', blank=False, null=False,
+        max_digits=10, decimal_places=2, verbose_name='На хоз. нужды, оплату труда', blank=False, null=True,
         default=0.00)
     boss_took_it = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name='Выемка денежных средств руководителем', blank=False,
-        null=False, default=0.00)
+        null=True, default=0.00)
     cash_register_end = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name='Остаток на конец дня', blank=False, null=False)
+        max_digits=10, decimal_places=2, verbose_name='Остаток на конец дня', blank=False, null=True)
     author = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, verbose_name='Сотрудник смены', blank=False, null=False)
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата изменения', blank=False, null=False)
+        CustomUser, on_delete=models.CASCADE, verbose_name='Сотрудник смены', blank=False, null=True)
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата изменения', blank=False, null=True)
     status = models.CharField(
         max_length=10,
         choices=CashReportStatusChoices.choices,

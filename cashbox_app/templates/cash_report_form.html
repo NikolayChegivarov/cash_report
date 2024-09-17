@@ -1,7 +1,8 @@
 {% block content %}
- <h2>Cash Report Form</h2>
+<h2>Cash Report Form</h2>
 <form method="post">
     {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
     <div>
         <label>Сотрудник смены:</label>
         {{ form.author }}
@@ -59,9 +60,9 @@
             </tr>
             <tr>
                 <td>Остаток на конец дня:</td>
-                <td>{{ form.cash_register_end_buying_up }}</td>
-                <td>{{ form.cash_register_end_pawnshop }}</td>
-                <td>{{ form.cash_register_end_technique }}</td>
+                <td id="cash_register_end_buying_up">{{ form.cash_register_end_buying_up }}</td>
+                <td id="cash_register_end_pawnshop">{{ form.cash_register_end_pawnshop }}</td>
+                <td id="cash_register_end_technique">{{ form.cash_register_end_technique }}</td>
             </tr>
         </tbody>
     </table>
@@ -74,5 +75,35 @@
     <button type="submit">Отправить</button>
 </form>
 
-{% endblock %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to calculate cash register end
+    function calculateCashRegisterEnd(type) {
+        var beginningBalance = parseFloat(document.querySelector(`input[name="${type}_cash_balance_beginning"]`).value);
+        var introduced = parseFloat(document.querySelector(`input[name="${type}_introduced"]`).value || 0);
+        var interestReturn = parseFloat(document.querySelector(`input[name="${type}_interest_return"]`).value || 0);
+        var loansIssued = parseFloat(document.querySelector(`input[name="${type}_loans_issued"]`).value || 0);
+        var usedFarming = parseFloat(document.querySelector(`input[name="${type}_used_farming"]`).value || 0);
+        var bossTookIt = parseFloat(document.querySelector(`input[name="${type}_boss_took_it"]`).value || 0);
 
+        var result = beginningBalance + introduced + interestReturn - loansIssued - usedFarming - bossTookIt;
+        document.getElementById(`cash_register_end_${type}`).value = result.toFixed(2);
+    }
+
+    // Calculate initial values
+    calculateCashRegisterEnd('buying_up');
+    calculateCashRegisterEnd('pawnshop');
+    calculateCashRegisterEnd('technique');
+
+    // Add event listeners to input fields
+    ['buying_up', 'pawnshop', 'technique'].forEach(type => {
+        document.querySelectorAll(`input[name^="${type}"]`).forEach(input => {
+            input.addEventListener('input', function() {
+                calculateCashRegisterEnd(type);
+            });
+        });
+    });
+});
+</script>
+
+{% endblock %}

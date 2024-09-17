@@ -32,21 +32,6 @@ class AddressSelectionForm(forms.Form):
     addresses = forms.ModelChoiceField(queryset=Address.objects.all(), empty_label="Выберите адрес")
 
 
-# Форма редактирования кассового отчета.
-# class CashReportForm(forms.ModelForm):
-#     class Meta:
-#         model = CashReport
-#         fields = [
-#             'author', 'id_address', 'cas_register', 'cas_register', 'cas_register', 'cash_balance_beginning',
-#             'introduced', 'interest_return', 'loans_issued', 'used_farming',
-#             'boss_took_it', 'cash_register_end', 'status'
-#         ]
-#         widgets = {  # Эти поля доступны только для чтения.
-#             'id_address': forms.Select(attrs={'readonly': 'readonly'}),
-#             'author': forms.TextInput(attrs={'readonly': 'readonly'})
-#         }
-
-
 class CashReportForm(forms.ModelForm):
     class Meta:
         model = CashReport
@@ -65,29 +50,32 @@ class MultiCashReportForm(forms.Form):
     author = forms.ModelChoiceField(queryset=CustomUser.objects.all())
     id_address = forms.ModelChoiceField(queryset=Address.objects.all())
 
-    cash_balance_beginning_buying_up = forms.DecimalField(max_digits=10, decimal_places=2)
-    introduced_buying_up = forms.DecimalField(max_digits=10, decimal_places=2)
-    interest_return_buying_up = forms.DecimalField(max_digits=10, decimal_places=2)
-    loans_issued_buying_up = forms.DecimalField(max_digits=10, decimal_places=2)
-    used_farming_buying_up = forms.DecimalField(max_digits=10, decimal_places=2)
-    boss_took_it_buying_up = forms.DecimalField(max_digits=10, decimal_places=2)
-    cash_register_end_buying_up = forms.DecimalField(max_digits=10, decimal_places=2)
+    # Формы для скупки.
+    cash_balance_beginning_buying_up = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
+    introduced_buying_up = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0.00)
+    interest_return_buying_up = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0.00)
+    loans_issued_buying_up = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0.00)
+    used_farming_buying_up = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0.00)
+    boss_took_it_buying_up = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0.00)
+    cash_register_end_buying_up = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
 
-    cash_balance_beginning_pawnshop = forms.DecimalField(max_digits=10, decimal_places=2)
-    introduced_pawnshop = forms.DecimalField(max_digits=10, decimal_places=2)
-    interest_return_pawnshop = forms.DecimalField(max_digits=10, decimal_places=2)
-    loans_issued_pawnshop = forms.DecimalField(max_digits=10, decimal_places=2)
-    used_farming_pawnshop = forms.DecimalField(max_digits=10, decimal_places=2)
-    boss_took_it_pawnshop = forms.DecimalField(max_digits=10, decimal_places=2)
-    cash_register_end_pawnshop = forms.DecimalField(max_digits=10, decimal_places=2)
+    # Формы для ломбарда
+    cash_balance_beginning_pawnshop = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
+    introduced_pawnshop = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0.00)
+    interest_return_pawnshop = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0.00)
+    loans_issued_pawnshop = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0.00)
+    used_farming_pawnshop = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0.00)
+    boss_took_it_pawnshop = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0.00)
+    cash_register_end_pawnshop = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
 
-    cash_balance_beginning_technique = forms.DecimalField(max_digits=10, decimal_places=2)
-    introduced_technique = forms.DecimalField(max_digits=10, decimal_places=2)
-    interest_return_technique = forms.DecimalField(max_digits=10, decimal_places=2)
-    loans_issued_technique = forms.DecimalField(max_digits=10, decimal_places=2)
-    used_farming_technique = forms.DecimalField(max_digits=10, decimal_places=2)
-    boss_took_it_technique = forms.DecimalField(max_digits=10, decimal_places=2)
-    cash_register_end_technique = forms.DecimalField(max_digits=10, decimal_places=2)
+    # Формы для техники.
+    cash_balance_beginning_technique = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
+    introduced_technique = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0.00)
+    interest_return_technique = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0.00)
+    loans_issued_technique = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0.00)
+    used_farming_technique = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0.00)
+    boss_took_it_technique = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0.00)
+    cash_register_end_technique = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
 
     status = forms.ChoiceField(choices=CashReportStatusChoices.choices, initial=CashReportStatusChoices.OPEN)
 

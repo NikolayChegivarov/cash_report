@@ -3,7 +3,7 @@ from django.views.generic import TemplateView, FormView
 from django.urls import reverse_lazy
 from django.shortcuts import redirect
 from cashbox_app.forms import CustomAuthenticationForm, AddressForm, CashReportForm, AddressSelectionForm
-from cashbox_app.models import Address
+from cashbox_app.models import Address, CashReport
 
 from django.views.generic import FormView
 from django.urls import reverse_lazy
@@ -76,12 +76,22 @@ class CashReportFormView(LoginRequiredMixin, FormView):
         # Возвращает настроенную форму
         return form
 
-    def form_valid(self, form):
-        """Обеспечивает правильное установление выбранного адреса и текущего пользователя при сохранении формы."""
-        # Устанавливает выбранный адрес для экземпляра формы
-        form.instance.id_address = Address.objects.get(id=self.request.session.get('selected_address_id'))
-        # Устанавливает текущего пользователя как автора отчета
-        form.instance.author = self.request.user
-        # Вызывает метод родительского класса для обработки валидной формы
-        return super().form_valid(form)
+    # def form_valid(self, form):
+    #     """Обеспечивает правильное установление выбранного адреса и текущего пользователя при сохранении формы."""
+    #     # Устанавливает выбранный адрес для экземпляра формы
+    #     form.instance.id_address = Address.objects.get(id=self.request.session.get('selected_address_id'))
+    #     # Устанавливает текущего пользователя как автора отчета
+    #     form.instance.author = self.request.user
+    #     # Вызывает метод родительского класса для обработки валидной формы
+    #     return super().form_valid(form)
 
+    def form_valid(self, form):
+        # Создайте новый экземпляр CashReport вручную.
+        cash_report = CashReport.objects.create(
+            author=self.request.user,
+            id_address_id=self.request.session.get('selected_address_id')
+        )
+
+        # При необходимости вы можете сохранить здесь данные формы.
+
+        return super().form_valid(form)

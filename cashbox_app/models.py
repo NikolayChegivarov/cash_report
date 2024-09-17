@@ -85,14 +85,21 @@ class CashReport(models.Model):  # Кассовый отчет.
     )
     cash_balance_beginning = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name='Остаток денежных средств в начале', blank=False, null=False)
-    introduced = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Внесено в кассу')
+    introduced = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name='Внесено в кассу', blank=False, null=False, default=0.00)
     interest_return = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name='Средства от процентов с залога, возврата выданных займов')
-    loans_issued = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Выдано займов')
-    used_farming = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='На хоз. нужды, оплату труда')
+        max_digits=10, decimal_places=2, verbose_name='Средства от процентов с залога, возврата выданных займов',
+        blank=False, null=False, default=0.00)
+    loans_issued = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name='Выдано займов', blank=False, null=False, default=0.00)
+    used_farming = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name='На хоз. нужды, оплату труда', blank=False, null=False,
+        default=0.00)
     boss_took_it = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name='Выемка денежных средств руководителем')
-    cash_register_end = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Остаток на конец дня')
+        max_digits=10, decimal_places=2, verbose_name='Выемка денежных средств руководителем', blank=False,
+        null=False, default=0.00)
+    cash_register_end = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name='Остаток на конец дня', blank=False, null=False)
     author = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, verbose_name='Сотрудник смены', blank=False, null=False)
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата изменения', blank=False, null=False)

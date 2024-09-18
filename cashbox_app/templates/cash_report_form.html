@@ -12,6 +12,11 @@
         {{ form.id_address }}
     </div>
 
+    <div>
+        <label>Тип операции:</label>
+        {{ form.cas_register }}
+    </div>
+
     <table>
         <thead>
             <tr>
@@ -91,15 +96,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Calculate initial values
-    calculateCashRegisterEnd('buying_up');
-    calculateCashRegisterEnd('pawnshop');
-    calculateCashRegisterEnd('technique');
-
-    // Add event listeners to input fields
     ['buying_up', 'pawnshop', 'technique'].forEach(type => {
         document.querySelectorAll(`input[name^="${type}"]`).forEach(input => {
             input.addEventListener('input', function() {
                 calculateCashRegisterEnd(type);
+            });
+        });
+    });
+
+    // Add event listener to cas_register
+    document.querySelector('input[name="cas_register"]').addEventListener('change', function() {
+        const selectedType = this.value;
+        ['cash_balance_beginning', 'introduced', 'interest_return', 'loans_issued', 'used_farming', 'boss_took_it', 'cash_register_end'].forEach(field => {
+            document.querySelectorAll(`input[name^="${selectedType}_${field}"]`).forEach(input => {
+                input.disabled = false;
+            });
+        });
+        ['cash_balance_beginning', 'introduced', 'interest_return', 'loans_issued', 'used_farming', 'boss_took_it', 'cash_register_end'].forEach(field => {
+            document.querySelectorAll(`input[name^="${'buying_up' if selectedType === 'Скупка' else 'pawnshop' if selectedType === 'Ломбард' else 'technique'}_${field}"]`).forEach(input => {
+                input.disabled = true;
             });
         });
     });

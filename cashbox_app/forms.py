@@ -79,6 +79,8 @@ class MultiCashReportForm(forms.Form):
 
     status = forms.ChoiceField(choices=CashReportStatusChoices.choices, initial=CashReportStatusChoices.OPEN)
 
+    cas_register = forms.ChoiceField(choices=CashRegisterChoices.choices, widget=forms.RadioSelect)
+
     def save(self):
         shift_date = datetime.now()
 
@@ -86,7 +88,8 @@ class MultiCashReportForm(forms.Form):
             shift_date=shift_date,
             id_address=self.cleaned_data['id_address'],
             author=self.cleaned_data['author'],
-            cas_register=CashRegisterChoices.BUYING_UP,
+            # cas_register=CashRegisterChoices.BUYING_UP,
+            cas_register=self.cleaned_data['cas_register'],
             cash_balance_beginning=self.cleaned_data['cash_balance_beginning_buying_up'],
             introduced=self.cleaned_data['introduced_buying_up'],
             interest_return=self.cleaned_data['interest_return_buying_up'],
@@ -102,7 +105,8 @@ class MultiCashReportForm(forms.Form):
             shift_date=shift_date,
             id_address=self.cleaned_data['id_address'],
             author=self.cleaned_data['author'],
-            cas_register=CashRegisterChoices.PAWNSHOP,
+            # cas_register=CashRegisterChoices.PAWNSHOP,
+            cas_register=self.cleaned_data['cas_register'],
             cash_balance_beginning=self.cleaned_data['cash_balance_beginning_pawnshop'],
             introduced=self.cleaned_data['introduced_pawnshop'],
             interest_return=self.cleaned_data['interest_return_pawnshop'],
@@ -118,7 +122,8 @@ class MultiCashReportForm(forms.Form):
             shift_date=shift_date,
             id_address=self.cleaned_data['id_address'],
             author=self.cleaned_data['author'],
-            cas_register=CashRegisterChoices.TECHNIQUE,
+            # cas_register=CashRegisterChoices.TECHNIQUE,
+            cas_register=self.cleaned_data['cas_register'],
             cash_balance_beginning=self.cleaned_data['cash_balance_beginning_technique'],
             introduced=self.cleaned_data['introduced_technique'],
             interest_return=self.cleaned_data['interest_return_technique'],

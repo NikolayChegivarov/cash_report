@@ -81,11 +81,10 @@ class CashReportFormView(LoginRequiredMixin, FormView):
         # Создайте новый экземпляр CashReport вручную.
         cash_report = CashReport.objects.create(
             author=self.request.user,
-            id_address_id=self.request.session.get('selected_address_id')
+            id_address_id=self.request.session.get('selected_address_id'),
+            cas_register=form.cleaned_data['cas_register']
         )
-
         # При необходимости вы можете сохранить здесь данные формы.
-
         return super().form_valid(form)
 
 

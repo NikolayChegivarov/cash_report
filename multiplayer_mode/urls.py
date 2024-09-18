@@ -22,5 +22,5 @@ urlpatterns = [
     path('login/', CustomLoginView.as_view(), name='login'),
     path('address-selection/', AddressSelectionView.as_view(), name='address_selection'),
     path('cash-report-form/', CashReportFormView.as_view(), name='cash_report_form'),
-    path('report_submitted/', ReportSubmittedView.as_view(), name='report_submitted'),
+    path('report-submitted/', ReportSubmittedView.as_view(), name='report_submitted'),
 ]

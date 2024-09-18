@@ -91,7 +91,15 @@ class CashReportFormView(LoginRequiredMixin, FormView):
 
 class ReportSubmittedView(FormView):
     # Указывает имя шаблона для отображения формы
-    template_name = 'cash_report_form.html'
+    template_name = 'report_submitted.html'
+    form_class = MultiCashReportForm
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('login')
 
 
     # URL, на который пользователь будет перенаправлен после успешной отправки формы

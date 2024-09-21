@@ -12,21 +12,17 @@
         {{ form.id_address }}
     </div>
 
-    <div>
-        <label>Тип операции:</label>
-        {{ form.cas_register }}
-    </div>
-
     <table>
         <thead>
-            <tr>
-                <th></th>
-                <th>Скупка</th>
-                <th>Ломбард</th>
-                <th>Техника</th>
-            </tr>
+
         </thead>
         <tbody>
+            <tr>
+                <td>Вид кассы:</td>
+                <td>{{ form.cas_register_buying_up }}</td>
+                <td>{{ form.cas_register_pawnshop }}</td>
+                <td>{{ form.cas_register_technique }}</td>
+            </tr>
             <tr>
                 <td>Остаток денежных средств в начале:</td>
                 <td>{{ form.cash_balance_beginning_buying_up }}</td>
@@ -77,14 +73,14 @@
         {{ form.status }}
     </div>
 
-    <button type="submit">Отправить</button>
+    <button type="submit">Сохранить изменения в кассах</button>
 </form>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Function to calculate cash register end
+    // Функция для расчета функции завершения кассового аппарата
     function calculateCashRegisterEnd(type) {
-        var beginningBalance = parseFloat(document.querySelector(`input[name="${type}_cash_balance_beginning"]`).value);
+        var beginningBalance = parseFloat(document.querySelector(`input[name="${type}_cash_balance_beginning"]`).value || 0);
         var introduced = parseFloat(document.querySelector(`input[name="${type}_introduced"]`).value || 0);
         var interestReturn = parseFloat(document.querySelector(`input[name="${type}_interest_return"]`).value || 0);
         var loansIssued = parseFloat(document.querySelector(`input[name="${type}_loans_issued"]`).value || 0);
@@ -95,7 +91,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById(`cash_register_end_${type}`).value = result.toFixed(2);
     }
 
-    // Calculate initial values
     ['buying_up', 'pawnshop', 'technique'].forEach(type => {
         document.querySelectorAll(`input[name^="${type}"]`).forEach(input => {
             input.addEventListener('input', function() {
@@ -104,21 +99,42 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Add event listener to cas_register
-    document.querySelector('input[name="cas_register"]').addEventListener('change', function() {
-        const selectedType = this.value;
-        ['cash_balance_beginning', 'introduced', 'interest_return', 'loans_issued', 'used_farming', 'boss_took_it', 'cash_register_end'].forEach(field => {
-            document.querySelectorAll(`input[name^="${selectedType}_${field}"]`).forEach(input => {
-                input.disabled = false;
-            });
-        });
-        ['cash_balance_beginning', 'introduced', 'interest_return', 'loans_issued', 'used_farming', 'boss_took_it', 'cash_register_end'].forEach(field => {
-            document.querySelectorAll(`input[name^="${'buying_up' if selectedType === 'Скупка' else 'pawnshop' if selectedType === 'Ломбард' else 'technique'}_${field}"]`).forEach(input => {
-                input.disabled = true;
-            });
+    document.querySelectorAll('select[name$="_register"]').forEach(select => {
+        select.addEventListener('change', function() {
+            console.log(this.name + ':' + this.value);
         });
     });
-});
-</script>
+    document.querySelector('form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var form = new MultiCashReportForm(this);
+        if (form.is_valid()) {
+            form.save();
+            alert('Данные сохранены успешно!');
+        } else {
+            alert('Пожалуйста, заполните все обязательные поля.');
+        }
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var form = new MultiCashReportForm(this);
 
+            console.log('Форма отправлена');
+            console.log('Все данные формы:', form.cleaned_data);
+            console.log('Значение поля cas_register_pawnshop:', form.cleaned_data.cas_register_pawnshop);
+            console.log('Опции поля cas_register_pawnshop:', form.fields.cas_register_pawnshop.choices);
+
+            if (form.is_valid()) {
+                console.log('Форма валидна');
+                form.save();
+                alert('Данные сохранены успешно!');
+            } else {
+                console.error('Форма невалидна:', form.errors);
+                alert('Пожалуйста, заполните все обязательные поля.');
+        }
+    });
+});
+
+
+</script>
 {% endblock %}

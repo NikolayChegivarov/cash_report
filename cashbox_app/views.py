@@ -40,26 +40,29 @@ class AddressSelectionView(FormView):
         return self.success_url
 
 
-# Заполнение отчета.
 class CashReportFormView(LoginRequiredMixin, FormView):
-    # Указывает имя шаблона для отображения формы
     template_name = 'cash_report_form.html'
-    # Указывает класс формы, который будет использоваться
     form_class = MultiCashReportForm
-    # URL, на который пользователь будет перенаправлен после успешной отправки формы
-    success_url = reverse_lazy('report_submitted')
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if form.is_valid():
+            result = form.save()
+            print(f"Результат сохранения: {result}")
+            return self.form_valid(form)
+        else:
+            print("Форма невалидна:", form.errors)
+            return self.form_invalid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('report_submitted')
 
     def get_initial(self):
-        # Получает начальные значения из родительского класса
         initial = super().get_initial()
-        # Проверяет наличие ID выбранного адреса в сессии пользователя
         selected_address_id = self.request.session.get('selected_address_id')
-        # Если ID адрес существует, устанавливает его как начальное значение поля id_address
         if selected_address_id:
             initial['id_address'] = Address.objects.get(id=selected_address_id)
-        # Устанавливает текущего пользователя как автора отчета
         initial['author'] = self.request.user
-        # Возвращает словарь с начальными значениями
         return initial
 
     def get_form(self, form_class=None):
@@ -74,17 +77,19 @@ class CashReportFormView(LoginRequiredMixin, FormView):
         form.fields['id_address'].disabled = True
         # Отключает поле author для редактирования
         form.fields['author'].disabled = True
-        # Возвращает настроенную форму
+
+        form.fields['cas_register_buying_up'].disabled = True
+        form.fields['cas_register_pawnshop'].disabled = True
+        form.fields['cas_register_technique'].disabled = True
+
+        # Запрет на редактирование статуса.
+        if hasattr(form, 'fields') and 'status' in form.fields:
+            form.fields['status'].disabled = True
+
         return form
 
     def form_valid(self, form):
-        # Создайте новый экземпляр CashReport вручную.
-        cash_report = CashReport.objects.create(
-            author=self.request.user,
-            id_address_id=self.request.session.get('selected_address_id'),
-            cas_register=form.cleaned_data['cas_register']
-        )
-        # При необходимости вы можете сохранить здесь данные формы.
+        form.save()
         return super().form_valid(form)
 
 

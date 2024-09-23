@@ -76,65 +76,57 @@
     <button type="submit">Сохранить изменения в кассах</button>
 </form>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Функция для расчета функции завершения кассового аппарата
-    function calculateCashRegisterEnd(type) {
-        var beginningBalance = parseFloat(document.querySelector(`input[name="${type}_cash_balance_beginning"]`).value || 0);
-        var introduced = parseFloat(document.querySelector(`input[name="${type}_introduced"]`).value || 0);
-        var interestReturn = parseFloat(document.querySelector(`input[name="${type}_interest_return"]`).value || 0);
-        var loansIssued = parseFloat(document.querySelector(`input[name="${type}_loans_issued"]`).value || 0);
-        var usedFarming = parseFloat(document.querySelector(`input[name="${type}_used_farming"]`).value || 0);
-        var bossTookIt = parseFloat(document.querySelector(`input[name="${type}_boss_took_it"]`).value || 0);
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        ['buying_up', 'pawnshop', 'technique'].forEach(type => {
+            const fields = [
+                `cash_balance_beginning_${type}`,
+                `${type}_introduced`,
+                `${type}_interest_return`,
+                `${type}_loans_issued`,
+                `${type}_used_farming`,
+                `${type}_boss_took_it`
+            ];
 
-        var result = beginningBalance + introduced + interestReturn - loansIssued - usedFarming - bossTookIt;
-        document.getElementById(`cash_register_end_${type}`).value = result.toFixed(2);
-    }
+            fields.forEach(field => {
+                document.querySelector(`input[name="${field}"]`).addEventListener('input', function() {
+                    calculateCashRegisterEnd(type);
+                });
+            });
 
-    ['buying_up', 'pawnshop', 'technique'].forEach(type => {
-        document.querySelectorAll(`input[name^="${type}"]`).forEach(input => {
-            input.addEventListener('input', function() {
-                calculateCashRegisterEnd(type);
+            function calculateCashRegisterEnd(type) {
+                let total = parseFloat(document.querySelector(`input[name="cash_balance_beginning_${type}"]`).value || 0);
+                total += parseFloat(document.querySelector(`input[name="${type}_introduced"]`).value || 0);
+                total += parseFloat(document.querySelector(`input[name="${type}_interest_return"]`).value || 0);
+                total -= parseFloat(document.querySelector(`input[name="${type}_loans_issued"]`).value || 0);
+                total -= parseFloat(document.querySelector(`input[name="${type}_used_farming"]`).value || 0);
+                total -= parseFloat(document.querySelector(`input[name="${type}_boss_took_it"]`).value || 0);
+
+                document.querySelector(`input[name="cash_register_end_${type}"]`).value = total.toFixed(2);
+            }
+        });
+
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/api/cash-report/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Данные сохранены успешно!');
+                } else {
+                    alert('Произошла ошибка при сохранении данных.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при отправке данных.');
             });
         });
     });
+    </script>
 
-    document.querySelectorAll('select[name$="_register"]').forEach(select => {
-        select.addEventListener('change', function() {
-            console.log(this.name + ':' + this.value);
-        });
-    });
-    document.querySelector('form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        var form = new MultiCashReportForm(this);
-        if (form.is_valid()) {
-            form.save();
-            alert('Данные сохранены успешно!');
-        } else {
-            alert('Пожалуйста, заполните все обязательные поля.');
-        }
-    });
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelector('form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var form = new MultiCashReportForm(this);
-
-            console.log('Форма отправлена');
-            console.log('Все данные формы:', form.cleaned_data);
-            console.log('Значение поля cas_register_pawnshop:', form.cleaned_data.cas_register_pawnshop);
-            console.log('Опции поля cas_register_pawnshop:', form.fields.cas_register_pawnshop.choices);
-
-            if (form.is_valid()) {
-                console.log('Форма валидна');
-                form.save();
-                alert('Данные сохранены успешно!');
-            } else {
-                console.error('Форма невалидна:', form.errors);
-                alert('Пожалуйста, заполните все обязательные поля.');
-        }
-    });
-});
-
-
-</script>
 {% endblock %}

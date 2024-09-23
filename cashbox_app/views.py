@@ -192,6 +192,8 @@ class CashReportFormView(LoginRequiredMixin, FormView):
 
         return form
 
+
+
     # def form_valid(self, form):
     #     form.save()
     #     return super().form_valid(form)

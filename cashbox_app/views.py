@@ -148,34 +148,47 @@ class CashReportFormView(LoginRequiredMixin, FormView):
         """Конфигурирует форму, отключая поля, которые не должны быть изменены."""
         # Получает экземпляр формы из родительского класса
         form = super().get_form(form_class)
+
         # Ограничивает queryset поля id_address только одним выбранным адресом
-        form.fields['id_address'].queryset = Address.objects.filter(id=self.request.session.get('selected_address_id'))
-        # Удаляет пустую метку для поля id_address
-        form.fields['id_address'].empty_label = None
-        # Отключает поле id_address для редактирования
-        form.fields['id_address'].disabled = True
-        # Отключает поле author для редактирования
-        form.fields['author'].disabled = True
-
-        form.fields['cas_register_buying_up'].disabled = True
-        form.fields['cas_register_pawnshop'].disabled = True
-        form.fields['cas_register_technique'].disabled = True
-
-        # Запрет на редактирование статуса.
-        if hasattr(form, 'fields') and 'status' in form.fields:
-            form.fields['status'].disabled = True
-
-        # Извлекаю адрес для функции current_balance.
-        # Ограничить набор запросов для id_address одним выбранным адресом.
         selected_address_id = self.request.session.get('selected_address_id')
         if selected_address_id:
             form.fields['id_address'].queryset = Address.objects.filter(id=selected_address_id)
         else:
             form.fields['id_address'].queryset = Address.objects.all()[:1]
-        print(f"Selected address ID: {selected_address_id}")
 
-        # Получаю баланс по кассам
-        current_balance(selected_address_id)
+        # Отключает поле id_address для редактирования
+        form.fields['id_address'].disabled = True
+
+        # Отключает поле author для редактирования
+        form.fields['author'].disabled = True
+
+        # Получаем актуальные балансы касс
+        current_balance_ = current_balance(selected_address_id)
+
+        # Устанавливаем начальные значения для полей кассовых регистров
+        form.initial['cas_register_buying_up'] = CashRegisterChoices.BUYING_UP
+        form.initial['cash_balance_beginning_buying_up'] = current_balance_[CashRegisterChoices.BUYING_UP]
+
+        form.initial['cas_register_pawnshop'] = CashRegisterChoices.PAWNSHOP
+        form.initial['cash_balance_beginning_pawnshop'] = current_balance_[CashRegisterChoices.PAWNSHOP]
+
+        form.initial['cas_register_technique'] = CashRegisterChoices.TECHNIQUE
+        form.initial['cash_balance_beginning_technique'] = current_balance_[CashRegisterChoices.TECHNIQUE]
+
+        # Отключает поля кассовых регистров для редактирования
+        form.fields['cas_register_buying_up'].disabled = True
+        form.fields['cash_balance_beginning_buying_up'].disabled = True
+        form.fields['cas_register_pawnshop'].disabled = True
+        form.fields['cash_balance_beginning_pawnshop'].disabled = True
+        form.fields['cas_register_technique'].disabled = True
+        form.fields['cash_balance_beginning_technique'].disabled = True
+
+        # Запрет на редактирование статуса.
+        if hasattr(form, 'fields') and 'status' in form.fields:
+            form.fields['status'].disabled = True
+
+        print(f"Selected address ID: {selected_address_id}")
+        print(f"Current balances: {current_balance_}")
 
         return form
 

@@ -182,6 +182,9 @@ class CashReportFormView(LoginRequiredMixin, FormView):
         form.fields['cash_balance_beginning_pawnshop'].disabled = True
         form.fields['cas_register_technique'].disabled = True
         form.fields['cash_balance_beginning_technique'].disabled = True
+        form.fields['cash_register_end_buying_up'].disabled = True
+        form.fields['cash_register_end_pawnshop'].disabled = True
+        form.fields['cash_register_end_technique'].disabled = True
 
         # Запрет на редактирование статуса.
         if hasattr(form, 'fields') and 'status' in form.fields:

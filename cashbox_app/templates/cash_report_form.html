@@ -1,15 +1,15 @@
 {% block content %}
-<h2>Cash Report Form</h2>
+<h2>Форма заполнения для сотрудников</h2>
 <form method="post">
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ next }}">
     <div>
         <label>Сотрудник смены:</label>
-        {{ form.author }}
+        {{form.author}}
     </div>
     <div>
         <label>Адрес:</label>
-        {{ form.id_address }}
+        {{form.id_address}}
     </div>
 
     <table>

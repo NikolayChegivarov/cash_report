@@ -1,31 +1,83 @@
-<!doctype html>
-<html lang="en">
-
+{% block content %}
+<h2>Форма заполнения для сотрудников</h2>
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
     <div>
         <label>Сотрудник смены:</label>
-        {{ form.author }}
+        {{form.author}}
     </div>
-
     <div>
         <label>Адрес:</label>
-        {{ form.id_address }}
+        {{form.id_address}}
     </div>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Ломбард народный</title>
-</head>
-<body>
-    <h1>Заголовок</h1>
-    <p> Данные успешно сохранены. </p>
+    <table>
+        <thead>
+
+        </thead>
+        <tbody>
+            <tr>
+                <td>Вид кассы:</td>
+                <td>{{ form.cas_register_buying_up }}</td>
+                <td>{{ form.cas_register_pawnshop }}</td>
+                <td>{{ form.cas_register_technique }}</td>
+            </tr>
+            <tr>
+                <td>Остаток денежных средств в начале:</td>
+                <td>{{ form.cash_balance_beginning_buying_up }}</td>
+                <td>{{ form.cash_balance_beginning_pawnshop }}</td>
+                <td>{{ form.cash_balance_beginning_technique }}</td>
+            </tr>
+            <tr>
+                <td>Внесено в кассу:</td>
+                <td>{{ form.introduced_buying_up }}</td>
+                <td>{{ form.introduced_pawnshop }}</td>
+                <td>{{ form.introduced_technique }}</td>
+            </tr>
+            <tr>
+                <td>Средства от процентов с залога, возврата выданных займов:</td>
+                <td>{{ form.interest_return_buying_up }}</td>
+                <td>{{ form.interest_return_pawnshop }}</td>
+                <td>{{ form.interest_return_technique }}</td>
+            </tr>
+            <tr>
+                <td>Выдано займов:</td>
+                <td>{{ form.loans_issued_buying_up }}</td>
+                <td>{{ form.loans_issued_pawnshop }}</td>
+                <td>{{ form.loans_issued_technique }}</td>
+            </tr>
+            <tr>
+                <td>На хоз. нужды, оплату труда:</td>
+                <td>{{ form.used_farming_buying_up }}</td>
+                <td>{{ form.used_farming_pawnshop }}</td>
+                <td>{{ form.used_farming_technique }}</td>
+            </tr>
+            <tr>
+                <td>Выемка денежных средств руководителем:</td>
+                <td>{{ form.boss_took_it_buying_up }}</td>
+                <td>{{ form.boss_took_it_pawnshop }}</td>
+                <td>{{ form.boss_took_it_technique }}</td>
+            </tr>
+            <tr>
+                <td>Остаток на конец дня:</td>
+                <td id="cash_register_end_buying_up">{{ form.cash_register_end_buying_up }}</td>
+                <td id="cash_register_end_pawnshop">{{ form.cash_register_end_pawnshop }}</td>
+                <td id="cash_register_end_technique">{{ form.cash_register_end_technique }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div>
+        <label>Статус:</label>
+        {{ form.status }}
+    </div>
 
     <button type="submit">Сменить пользователя</button>
     <button type="submit">Сменить адрес</button>
     <button type="submit">Новый день</button>
+</form>
 
-</body>
-</html>
+{% endblock %}
+
 

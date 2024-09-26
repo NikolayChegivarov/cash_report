@@ -200,15 +200,13 @@ class CashReportFormView(LoginRequiredMixin, FormView):
         print(f"Current balances: {current_balance_}")
 
         return form
-    # def form_valid(self, form):
-    #     form.save()
-    #     return super().form_valid(form)
 
 
 class ReportSubmittedView(FormView):
     # Указывает имя шаблона для отображения формы
     template_name = 'report_submitted.html'
-    form_class = ResultForm
+    # form_class = ResultForm
+    form_class = MultiCashReportForm
 
     def get_initial(self):
         initial = {}
@@ -218,6 +216,57 @@ class ReportSubmittedView(FormView):
         initial['author'] = self.request.user
 
         return initial
+
+    def get_form(self, form_class=None):
+        """Конфигурирует форму, отключая поля, которые не должны быть изменены."""
+        # Получает экземпляр формы из родительского класса
+        form = super().get_form(form_class)
+
+        # Ограничивает queryset поля id_address только одним выбранным адресом
+        selected_address_id = self.request.session.get('selected_address_id')
+        if selected_address_id:
+            form.fields['id_address'].queryset = Address.objects.filter(id=selected_address_id)
+        else:
+            form.fields['id_address'].queryset = Address.objects.all()[:1]
+
+        # Отключает поле id_address для редактирования
+        form.fields['id_address'].disabled = True
+
+        # Отключает поле author для редактирования
+        form.fields['author'].disabled = True
+
+        # Получаем актуальные балансы касс
+        current_balance_ = current_balance(selected_address_id)
+
+        # Устанавливаем начальные значения для полей кассовых регистров
+        form.initial['cas_register_buying_up'] = CashRegisterChoices.BUYING_UP
+        form.initial['cash_balance_beginning_buying_up'] = current_balance_['buying_up']
+
+        form.initial['cas_register_pawnshop'] = CashRegisterChoices.PAWNSHOP
+        form.initial['cash_balance_beginning_pawnshop'] = current_balance_['pawnshop']
+
+        form.initial['cas_register_technique'] = CashRegisterChoices.TECHNIQUE
+        form.initial['cash_balance_beginning_technique'] = current_balance_['technique']
+
+        # Отключает поля кассовых регистров для редактирования
+        form.fields['cas_register_buying_up'].disabled = True
+        form.fields['cash_balance_beginning_buying_up'].disabled = True
+        form.fields['cas_register_pawnshop'].disabled = True
+        form.fields['cash_balance_beginning_pawnshop'].disabled = True
+        form.fields['cas_register_technique'].disabled = True
+        form.fields['cash_balance_beginning_technique'].disabled = True
+        form.fields['cash_register_end_buying_up'].disabled = True
+        form.fields['cash_register_end_pawnshop'].disabled = True
+        form.fields['cash_register_end_technique'].disabled = True
+
+        # Запрет на редактирование статуса.
+        if hasattr(form, 'fields') and 'status' in form.fields:
+            form.fields['status'].disabled = True
+
+        print(f"Selected address ID: {selected_address_id}")
+        print(f"Current balances: {current_balance_}")
+
+        return form
 
     # def get_form(self, form_class=None):
     #     form = super().get_form(form_class)

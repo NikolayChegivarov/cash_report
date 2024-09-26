@@ -13,3 +13,6 @@ python manage.py makemigrations  # создать инструкции для и
 python manage.py migrate  # применить инструкции.
 
 python manage.py runserver  # запустить сервер
+
+# заполнить таблицу report_submitted.html
+# Сделать представления для менеджера.

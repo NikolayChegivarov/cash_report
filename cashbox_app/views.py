@@ -240,13 +240,15 @@ class ReportSubmittedView(FormView):
 
         # Устанавливаем начальные значения для полей кассовых регистров
         form.initial['cas_register_buying_up'] = CashRegisterChoices.BUYING_UP
-        form.initial['cash_balance_beginning_buying_up'] = current_balance_['buying_up']
+        # form.initial[''] =
+        form.initial['cash_register_end_buying_up'] = current_balance_['buying_up']
+
 
         form.initial['cas_register_pawnshop'] = CashRegisterChoices.PAWNSHOP
-        form.initial['cash_balance_beginning_pawnshop'] = current_balance_['pawnshop']
+        form.initial['cash_register_end_pawnshop'] = current_balance_['pawnshop']
 
         form.initial['cas_register_technique'] = CashRegisterChoices.TECHNIQUE
-        form.initial['cash_balance_beginning_technique'] = current_balance_['technique']
+        form.initial['cash_register_end_technique'] = current_balance_['technique']
 
         # Отключает поля кассовых регистров для редактирования
         form.fields['cas_register_buying_up'].disabled = True
@@ -267,26 +269,6 @@ class ReportSubmittedView(FormView):
         print(f"Current balances: {current_balance_}")
 
         return form
-
-    # def get_form(self, form_class=None):
-    #     form = super().get_form(form_class)
-    #
-    #     # Получаем актуальные балансы касс
-    #     current_balance_ = current_balance(selected_address_id)
-    #
-    #     # Устанавливаем начальные значения для полей кассовых регистров
-    #     form.initial['cas_register_buying_up'] = CashRegisterChoices.BUYING_UP
-    #     form.initial['cash_balance_beginning_buying_up'] = current_balance_['buying_up']
-    #
-    #     form.initial['cas_register_pawnshop'] = CashRegisterChoices.PAWNSHOP
-    #     form.initial['cash_balance_beginning_pawnshop'] = current_balance_['pawnshop']
-    #
-    #     form.initial['cas_register_technique'] = CashRegisterChoices.TECHNIQUE
-    #     form.initial['cash_balance_beginning_technique'] = current_balance_['technique']
-
-
-
-
 
     def get_success_url(self):
         return reverse_lazy('login')

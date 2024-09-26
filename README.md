@@ -15,4 +15,6 @@ python manage.py migrate  # применить инструкции.
 python manage.py runserver  # запустить сервер
 
 # заполнить таблицу report_submitted.html
+# статус закрыто
 # Сделать представления для менеджера.
+#

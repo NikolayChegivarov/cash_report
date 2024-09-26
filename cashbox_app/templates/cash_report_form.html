@@ -82,62 +82,62 @@
     <button type="submit">Сохранить</button>
 </form>
 
-<script>
-    // Добавляем слушатель события для загрузки DOM
-    document.addEventListener('DOMContentLoaded', function() {
-        ['buying_up', 'pawnshop', 'technique'].forEach(type => {
-            // Определяем массив полей для каждого типа
-            const fields = [
-                `cash_balance_beginning_${type}`,
-                `${type}_introduced`,
-                `${type}_interest_return`,
-                `${type}_loans_issued`,
-                `${type}_used_farming`,
-                `${type}_boss_took_it`
-            ];
+<!--<script>-->
+<!--    // Добавляем слушатель события для загрузки DOM-->
+<!--    document.addEventListener('DOMContentLoaded', function() {-->
+<!--        ['buying_up', 'pawnshop', 'technique'].forEach(type => {-->
+<!--            // Определяем массив полей для каждого типа-->
+<!--            const fields = [-->
+<!--                `cash_balance_beginning_${type}`,-->
+<!--                `${type}_introduced`,-->
+<!--                `${type}_interest_return`,-->
+<!--                `${type}_loans_issued`,-->
+<!--                `${type}_used_farming`,-->
+<!--                `${type}_boss_took_it`-->
+<!--            ];-->
 
-            // Добавляем слушатели событий для каждого поля
-            fields.forEach(field => {
-                document.querySelector(`input[name="${field}"]`).addEventListener('input', function() {
-                    calculateCashRegisterEnd(type);
-                });
-            });
+<!--            // Добавляем слушатели событий для каждого поля-->
+<!--            fields.forEach(field => {-->
+<!--                document.querySelector(`input[name="${field}"]`).addEventListener('input', function() {-->
+<!--                    calculateCashRegisterEnd(type);-->
+<!--                });-->
+<!--            });-->
 
-            // Функция для расчета конечного состояния кассы
-            function calculateCashRegisterEnd(type) {
-                let total = parseFloat(document.querySelector(`input[name="cash_balance_beginning_${type}"]`).value || 0);
-                total += parseFloat(document.querySelector(`input[name="${type}_introduced"]`).value || 0);
-                total += parseFloat(document.querySelector(`input[name="${type}_interest_return"]`).value || 0);
-                total -= parseFloat(document.querySelector(`input[name="${type}_loans_issued"]`).value || 0);
-                total -= parseFloat(document.querySelector(`input[name="${type}_used_farming"]`).value || 0);
-                total -= parseFloat(document.querySelector(`input[name="${type}_boss_took_it"]`).value || 0);
+<!--            // Функция для расчета конечного состояния кассы-->
+<!--            function calculateCashRegisterEnd(type) {-->
+<!--                let total = parseFloat(document.querySelector(`input[name="cash_balance_beginning_${type}"]`).value || 0);-->
+<!--                total += parseFloat(document.querySelector(`input[name="${type}_introduced"]`).value || 0);-->
+<!--                total += parseFloat(document.querySelector(`input[name="${type}_interest_return"]`).value || 0);-->
+<!--                total -= parseFloat(document.querySelector(`input[name="${type}_loans_issued"]`).value || 0);-->
+<!--                total -= parseFloat(document.querySelector(`input[name="${type}_used_farming"]`).value || 0);-->
+<!--                total -= parseFloat(document.querySelector(`input[name="${type}_boss_took_it"]`).value || 0);-->
 
-                document.querySelector(`input[name="cash_register_end_${type}"]`).value = total.toFixed(2);
-            }
-        });
+<!--                document.querySelector(`input[name="cash_register_end_${type}"]`).value = total.toFixed(2);-->
+<!--            }-->
+<!--        });-->
 
-        // Слушатель события отправки формы
-        document.querySelector('form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            fetch('/api/cash-report/', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Данные сохранены успешно!');
-                } else {
-                    alert('Произошла ошибка при сохранении данных.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Произошла ошибка при отправке данных.');
-            });
-        });
-    });
-</script>
+<!--        // Слушатель события отправки формы-->
+<!--        document.querySelector('form').addEventListener('submit', function(e) {-->
+<!--            e.preventDefault();-->
+<!--            const formData = new FormData(this);-->
+<!--            fetch('/api/cash-report/', {-->
+<!--                method: 'POST',-->
+<!--                body: formData-->
+<!--            })-->
+<!--            .then(response => response.json())-->
+<!--            .then(data => {-->
+<!--                if (data.success) {-->
+<!--                    alert('Данные сохранены успешно!');-->
+<!--                } else {-->
+<!--                    alert('Произошла ошибка при сохранении данных.');-->
+<!--                }-->
+<!--            })-->
+<!--            .catch(error => {-->
+<!--                console.error('Error:', error);-->
+<!--                alert('Произошла ошибка при отправке данных.');-->
+<!--            });-->
+<!--        });-->
+<!--    });-->
+<!--</script>-->
 
 {% endblock %}

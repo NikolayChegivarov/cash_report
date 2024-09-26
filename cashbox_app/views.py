@@ -14,6 +14,8 @@ from django.db.models import F
 from django.db.models import Max
 from django.utils import timezone
 from django.views.generic.base import View
+from django.utils.timezone import now
+from datetime import datetime
 
 
 
@@ -171,7 +173,9 @@ class CashReportFormView(LoginRequiredMixin, FormView):
         # Получаем актуальные балансы касс
         current_balance_ = current_balance(selected_address_id)
 
-        # Устанавливаем начальные значения для полей кассовых регистров
+        # Устанавливаю значения для полей.
+        form.initial['data'] = now().strftime('%Y-%m-%d')
+
         form.initial['cas_register_buying_up'] = CashRegisterChoices.BUYING_UP
         form.initial['cash_balance_beginning_buying_up'] = current_balance_['buying_up']
 
@@ -181,7 +185,7 @@ class CashReportFormView(LoginRequiredMixin, FormView):
         form.initial['cas_register_technique'] = CashRegisterChoices.TECHNIQUE
         form.initial['cash_balance_beginning_technique'] = current_balance_['technique']
 
-        # Отключает поля кассовых регистров для редактирования
+        # Отключаю поля для редактирования
         form.fields['cas_register_buying_up'].disabled = True
         form.fields['cash_balance_beginning_buying_up'].disabled = True
         form.fields['cas_register_pawnshop'].disabled = True
@@ -235,10 +239,15 @@ class ReportSubmittedView(FormView):
         # Отключает поле author для редактирования
         form.fields['author'].disabled = True
 
-        # Получаем актуальные балансы касс
+        # Получаем актуальные балансы касс.
         current_balance_ = current_balance(selected_address_id)
 
-        # Устанавливаем начальные значения для полей кассовых регистров
+        # получаю данные из бд.
+
+
+        # Устанавливаю значения для полей.
+        form.initial['data'] = now().strftime('%Y-%m-%d')
+
         form.initial['cas_register_buying_up'] = CashRegisterChoices.BUYING_UP
         # form.initial[''] =
         form.initial['cash_register_end_buying_up'] = current_balance_['buying_up']
@@ -250,7 +259,7 @@ class ReportSubmittedView(FormView):
         form.initial['cas_register_technique'] = CashRegisterChoices.TECHNIQUE
         form.initial['cash_register_end_technique'] = current_balance_['technique']
 
-        # Отключает поля кассовых регистров для редактирования
+        # Отключаю поля для редактирования.
         form.fields['cas_register_buying_up'].disabled = True
         form.fields['cash_balance_beginning_buying_up'].disabled = True
         form.fields['cas_register_pawnshop'].disabled = True

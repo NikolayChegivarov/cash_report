@@ -7,9 +7,15 @@
         <label>Сотрудник смены:</label>
         {{form.author}}
     </div>
+
     <div>
         <label>Адрес:</label>
         {{form.id_address}}
+    </div>
+
+    <div>
+        <label>Дата:</label>
+        {{form.data}}
     </div>
 
     <table>
@@ -76,9 +82,11 @@
     <button type="submit">Сохранить</button>
 </form>
 
-    <script>
+<script>
+    // Добавляем слушатель события для загрузки DOM
     document.addEventListener('DOMContentLoaded', function() {
         ['buying_up', 'pawnshop', 'technique'].forEach(type => {
+            // Определяем массив полей для каждого типа
             const fields = [
                 `cash_balance_beginning_${type}`,
                 `${type}_introduced`,
@@ -88,12 +96,14 @@
                 `${type}_boss_took_it`
             ];
 
+            // Добавляем слушатели событий для каждого поля
             fields.forEach(field => {
                 document.querySelector(`input[name="${field}"]`).addEventListener('input', function() {
                     calculateCashRegisterEnd(type);
                 });
             });
 
+            // Функция для расчета конечного состояния кассы
             function calculateCashRegisterEnd(type) {
                 let total = parseFloat(document.querySelector(`input[name="cash_balance_beginning_${type}"]`).value || 0);
                 total += parseFloat(document.querySelector(`input[name="${type}_introduced"]`).value || 0);
@@ -106,6 +116,7 @@
             }
         });
 
+        // Слушатель события отправки формы
         document.querySelector('form').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
@@ -127,6 +138,6 @@
             });
         });
     });
-    </script>
+</script>
 
 {% endblock %}

@@ -90,6 +90,7 @@ class MultiCashReportForm(forms.Form):
 
     author = forms.ModelChoiceField(queryset=CustomUser.objects.all())
     id_address = forms.ModelChoiceField(queryset=Address.objects.all())
+    data = forms.CharField(widget=forms.Textarea(attrs={'rows': 5}), required=False)
 
     # Формы для скупки.
     cas_register_buying_up = forms.ChoiceField(choices=CashRegisterChoices.choices, initial='BUYING_UP')

@@ -2,7 +2,7 @@ from django.contrib.auth.views import LoginView
 from django.views.generic import TemplateView, FormView
 from django.urls import reverse_lazy
 from django.shortcuts import redirect, render
-from cashbox_app.forms import CustomAuthenticationForm, AddressForm, CashReportForm, AddressSelectionForm
+from cashbox_app.forms import CustomAuthenticationForm, AddressForm, CashReportForm, AddressSelectionForm, ResultForm
 from cashbox_app.models import Address, CashReport, CashRegisterChoices
 
 from django.views.generic import FormView
@@ -208,7 +208,7 @@ class CashReportFormView(LoginRequiredMixin, FormView):
 class ReportSubmittedView(FormView):
     # Указывает имя шаблона для отображения формы
     template_name = 'report_submitted.html'
-    form_class = MultiCashReportForm
+    form_class = ResultForm
 
     def get_initial(self):
         initial = {}
@@ -219,8 +219,22 @@ class ReportSubmittedView(FormView):
 
         return initial
 
-    def get_form(self, form_class=None):
-        """Конфигурирует форму, отключая поля, которые не должны быть изменены."""
+    # def get_form(self, form_class=None):
+    #     form = super().get_form(form_class)
+    #
+    #     # Получаем актуальные балансы касс
+    #     current_balance_ = current_balance(selected_address_id)
+    #
+    #     # Устанавливаем начальные значения для полей кассовых регистров
+    #     form.initial['cas_register_buying_up'] = CashRegisterChoices.BUYING_UP
+    #     form.initial['cash_balance_beginning_buying_up'] = current_balance_['buying_up']
+    #
+    #     form.initial['cas_register_pawnshop'] = CashRegisterChoices.PAWNSHOP
+    #     form.initial['cash_balance_beginning_pawnshop'] = current_balance_['pawnshop']
+    #
+    #     form.initial['cas_register_technique'] = CashRegisterChoices.TECHNIQUE
+    #     form.initial['cash_balance_beginning_technique'] = current_balance_['technique']
+
 
 
 

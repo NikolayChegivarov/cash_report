@@ -67,6 +67,24 @@ class CashReportForm(forms.ModelForm):
         return cleaned_data
 
 
+def calculate_cash_register_end(self, cleaned_data, register_type):
+    print(f'Используется функция подсчета остатка на конец дня: calculate_cash_register_end')
+    print(f'cleaned_data_________{cleaned_data}')
+    fields = [
+        f'cash_balance_beginning_{register_type}',
+        f'introduced_{register_type}',
+        f'interest_return_{register_type}',
+        f'loans_issued_{register_type}',
+        f'used_farming_{register_type}',
+        f'boss_took_it_{register_type}'
+    ]
+
+    total = sum(float(cleaned_data.get(field, 0)) for field in fields[:3])
+    total -= sum(float(cleaned_data.get(field, 0)) for field in fields[3:])
+
+    cleaned_data[f'cash_register_end_{register_type}'] = round(total, 2)
+
+
 class MultiCashReportForm(forms.Form):
     print(f"MultiCashReportForm")
 
@@ -177,32 +195,20 @@ class MultiCashReportForm(forms.Form):
         cleaned_data = super().clean()
 
         # Расчет для покупок
-        self.calculate_cash_register_end(cleaned_data, 'buying_up')
+        calculate_cash_register_end(self, cleaned_data, 'buying_up')
         # Расчет для ломбарда
-        self.calculate_cash_register_end(cleaned_data, 'pawnshop')
+        calculate_cash_register_end(self, cleaned_data, 'pawnshop')
         # Расчет для техники
-        self.calculate_cash_register_end(cleaned_data, 'technique')
+        calculate_cash_register_end(self, cleaned_data, 'technique')
         return cleaned_data
-
-    def calculate_cash_register_end(self, cleaned_data, register_type):
-        print(f'Используется функция подсчета остатка на конец дня: calculate_cash_register_end')
-        fields = [
-            f'cash_balance_beginning_{register_type}',
-            f'introduced_{register_type}',
-            f'interest_return_{register_type}',
-            f'loans_issued_{register_type}',
-            f'used_farming_{register_type}',
-            f'boss_took_it_{register_type}'
-        ]
-
-        total = sum(float(cleaned_data.get(field, 0)) for field in fields[:3])
-        total -= sum(float(cleaned_data.get(field, 0)) for field in fields[3:])
-
-        cleaned_data[f'cash_register_end_{register_type}'] = round(total, 2)
 
 
 class ResultForm(forms.Form):
 
-    # today_date = forms.DateField()
+    today_date = forms.DateField()
+
+    # ТП Адрес
+    # Дата, cash_register, balance
+
     pass
 

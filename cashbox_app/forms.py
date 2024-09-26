@@ -203,6 +203,6 @@ class MultiCashReportForm(forms.Form):
 
 class ResultForm(forms.Form):
 
-    today_date =
+    # today_date = forms.DateField()
     pass
 

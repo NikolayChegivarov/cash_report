@@ -60,14 +60,7 @@ class AddressSelectionView(FormView):
 def current_balance(address_id):
     """Получение текущего баланса кассы"""
     # Создаю словарь с балансами касс.
-    BUYING_UP = CashRegisterChoices.BUYING_UP
-    PAWNSHOP = CashRegisterChoices.PAWNSHOP
-    TECHNIQUE = CashRegisterChoices.TECHNIQUE
-    current_balance = {
-        BUYING_UP: None,
-        PAWNSHOP: None,
-        TECHNIQUE: None
-    }
+    balance = {'buying_up': None, 'pawnshop': None, 'technique': None}
 
     # Получаем все отчеты по скупке для указанного адреса
     buying_up_reports_BUYING_UP = CashReport.objects.filter(
@@ -79,11 +72,11 @@ def current_balance(address_id):
 
     if buying_up_reports_BUYING_UP:
         # Если результат есть, добавляю его в словарь.
-        current_balance[CashRegisterChoices.BUYING_UP] = buying_up_reports_BUYING_UP['cash_register_end']
-        print(f'Текущий баланс BUYING_UP: {current_balance.get('BUYING_UP')}')
+        balance['buying_up'] = buying_up_reports_BUYING_UP['cash_register_end']
+        print(f'Текущий баланс BUYING_UP: {balance.get('buying_up')}')
     else:
         # Если значения нет. Устанавливаю 0
-        current_balance[CashRegisterChoices.BUYING_UP] = 0
+        balance['buying_up'] = 0
         print(f"Отчетов по скупке для адреса {address_id} не найдено")
 
     # Получаем все отчеты по ломбарду для указанного адреса.
@@ -95,10 +88,10 @@ def current_balance(address_id):
     ).order_by('-last_updated').first()
 
     if buying_up_reports_PAWNSHOP:
-        current_balance[CashRegisterChoices.PAWNSHOP] = buying_up_reports_PAWNSHOP['cash_register_end']
-        print(f'Текущий баланс PAWNSHOP: {current_balance.get('PAWNSHOP')}')
+        balance['pawnshop'] = buying_up_reports_PAWNSHOP['cash_register_end']
+        print(f'Текущий баланс PAWNSHOP: {balance.get('pawnshop')}')
     else:
-        current_balance[CashRegisterChoices.BUYING_UP] = 0
+        balance['pawnshop'] = 0
         print(f"Отчетов по скупке для адреса {address_id} не найдено")
 
     # Получаем все отчеты по ломбарду для указанного адреса.
@@ -110,13 +103,13 @@ def current_balance(address_id):
     ).order_by('-last_updated').first()
 
     if buying_up_reports_TECHNIQUE:
-        current_balance[CashRegisterChoices.TECHNIQUE] = buying_up_reports_TECHNIQUE['cash_register_end']
-        print(f'Текущий баланс TECHNIQUE: {current_balance.get('TECHNIQUE')}')
+        balance['technique'] = buying_up_reports_TECHNIQUE['cash_register_end']
+        print(f'Текущий баланс TECHNIQUE: {balance.get('technique')}')
     else:
-        current_balance[CashRegisterChoices.TECHNIQUE] = 0
+        balance['technique'] = 0
         print(f"Отчетов по скупке для адреса {address_id} не найдено")
 
-    return current_balance
+    return balance
 
 
 class CashReportFormView(LoginRequiredMixin, FormView):
@@ -180,13 +173,13 @@ class CashReportFormView(LoginRequiredMixin, FormView):
 
         # Устанавливаем начальные значения для полей кассовых регистров
         form.initial['cas_register_buying_up'] = CashRegisterChoices.BUYING_UP
-        form.initial['cash_balance_beginning_buying_up'] = current_balance_[CashRegisterChoices.BUYING_UP]
+        form.initial['cash_balance_beginning_buying_up'] = current_balance_['buying_up']
 
         form.initial['cas_register_pawnshop'] = CashRegisterChoices.PAWNSHOP
-        form.initial['cash_balance_beginning_pawnshop'] = current_balance_[CashRegisterChoices.PAWNSHOP]
+        form.initial['cash_balance_beginning_pawnshop'] = current_balance_['pawnshop']
 
         form.initial['cas_register_technique'] = CashRegisterChoices.TECHNIQUE
-        form.initial['cash_balance_beginning_technique'] = current_balance_[CashRegisterChoices.TECHNIQUE]
+        form.initial['cash_balance_beginning_technique'] = current_balance_['technique']
 
         # Отключает поля кассовых регистров для редактирования
         form.fields['cas_register_buying_up'].disabled = True

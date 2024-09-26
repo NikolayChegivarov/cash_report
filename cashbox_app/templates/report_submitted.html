@@ -1,5 +1,16 @@
 <!doctype html>
 <html lang="en">
+
+    <div>
+        <label>Сотрудник смены:</label>
+        {{ form.author }}
+    </div>
+
+    <div>
+        <label>Адрес:</label>
+        {{ form.id_address }}
+    </div>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
@@ -10,6 +21,11 @@
 <body>
     <h1>Заголовок</h1>
     <p> Данные успешно сохранены. </p>
+
+    <button type="submit">Сменить пользователя</button>
+    <button type="submit">Сменить адрес</button>
+    <button type="submit">Новый день</button>
+
 </body>
 </html>
 

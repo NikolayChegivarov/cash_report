@@ -58,7 +58,7 @@ class AddressSelectionView(FormView):
 
 
 def current_balance(address_id):
-    """Функция для получения текущего баланса кассы"""
+    """Получение текущего баланса кассы"""
     # Создаю словарь с балансами касс.
     BUYING_UP = CashRegisterChoices.BUYING_UP
     PAWNSHOP = CashRegisterChoices.PAWNSHOP
@@ -124,11 +124,24 @@ class CashReportFormView(LoginRequiredMixin, FormView):
     form_class = MultiCashReportForm
 
     def get_initial(self):
-        initial = super().get_initial()
+        initial = {}
         selected_address_id = self.request.session.get('selected_address_id')
         if selected_address_id:
             initial['id_address'] = Address.objects.get(id=selected_address_id)
         initial['author'] = self.request.user
+
+        # Распечатка содержимого request
+        print("-" * 50)
+        print("Содержимое request:")
+        for attr_name in dir(self.request):
+            if not attr_name.startswith('__'):
+                try:
+                    value = getattr(self.request, attr_name)
+                    print(f"{attr_name}: {value}")
+                except Exception as e:
+                    print(f"Ошибка при доступе к {attr_name}: {str(e)}")
+        print("-" * 50)
+
         return initial
 
     def post(self, request, *args, **kwargs):
@@ -194,9 +207,6 @@ class CashReportFormView(LoginRequiredMixin, FormView):
         print(f"Current balances: {current_balance_}")
 
         return form
-
-
-
     # def form_valid(self, form):
     #     form.save()
     #     return super().form_valid(form)
@@ -207,9 +217,20 @@ class ReportSubmittedView(FormView):
     template_name = 'report_submitted.html'
     form_class = MultiCashReportForm
 
-    def form_valid(self, form):
-        form.save()
-        return super().form_valid(form)
+    def get_initial(self):
+        initial = {}
+        selected_address_id = self.request.session.get('selected_address_id')
+        if selected_address_id:
+            initial['id_address'] = Address.objects.get(id=selected_address_id)
+        initial['author'] = self.request.user
+
+        return initial
+
+    def get_form(self, form_class=None):
+        """Конфигурирует форму, отключая поля, которые не должны быть изменены."""
+
+
+
 
     def get_success_url(self):
         return reverse_lazy('login')

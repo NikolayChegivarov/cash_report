@@ -2,7 +2,7 @@ from django.contrib.auth.views import LoginView
 from django.views.generic import TemplateView, FormView
 from django.urls import reverse_lazy
 from django.shortcuts import redirect, render
-from cashbox_app.forms import CustomAuthenticationForm, AddressForm, CashReportForm, AddressSelectionForm, ResultForm
+from cashbox_app.forms import CustomAuthenticationForm, AddressForm, CashReportForm, AddressSelectionForm
 from cashbox_app.models import Address, CashReport, CashRegisterChoices
 
 from django.views.generic import FormView
@@ -16,7 +16,6 @@ from django.utils import timezone
 from django.views.generic.base import View
 from django.utils.timezone import now
 from datetime import datetime
-
 
 
 # Страница авторизации с переходом на страницу выбор адреса.
@@ -233,49 +232,99 @@ class ReportSubmittedView(FormView):
         else:
             form.fields['id_address'].queryset = Address.objects.all()[:1]
 
-        # Отключает поле id_address для редактирования
-        form.fields['id_address'].disabled = True
+        address_id = selected_address_id
 
-        # Отключает поле author для редактирования
-        form.fields['author'].disabled = True
+        # ПОЛУЧАЮ ДАННЫЕ ИЗ БД.
+        # BUYING_UP.
+        buying_up_reports_BUYING_UP = CashReport.objects.filter(
+            cas_register=CashRegisterChoices.BUYING_UP,
+            id_address_id=address_id
+        ).annotate(
+            last_updated=Max('updated_at')
+        ).order_by('-last_updated').first()
+        # PAWNSHOP.
+        buying_up_reports_PAWNSHOP = CashReport.objects.filter(
+            cas_register=CashRegisterChoices.PAWNSHOP,
+            id_address_id=address_id
+        ).annotate(
+            last_updated=Max('updated_at')
+        ).order_by('-last_updated').first()
+        # TECHNIQUE.
+        buying_up_reports_TECHNIQUE = CashReport.objects.filter(
+            cas_register=CashRegisterChoices.TECHNIQUE,
+            id_address_id=address_id
+        ).annotate(
+            last_updated=Max('updated_at')
+        ).order_by('-last_updated').first()
 
-        # Получаем актуальные балансы касс.
-        current_balance_ = current_balance(selected_address_id)
-
-        # получаю данные из бд.
-
+        print(f'тест:{buying_up_reports_BUYING_UP}')
 
         # Устанавливаю значения для полей.
+        # Общее
         form.initial['data'] = now().strftime('%Y-%m-%d')
+        # BUYING_UP.
+        form.initial['cas_register_buying_up'] = buying_up_reports_BUYING_UP.cas_register
+        form.initial['cash_balance_beginning_buying_up'] = buying_up_reports_BUYING_UP.cash_balance_beginning
+        form.initial['introduced_buying_up'] = buying_up_reports_BUYING_UP.introduced
+        form.initial['interest_return_buying_up'] = buying_up_reports_BUYING_UP.interest_return
+        form.initial['loans_issued_buying_up'] = buying_up_reports_BUYING_UP.loans_issued
+        form.initial['used_farming_buying_up'] = buying_up_reports_BUYING_UP.used_farming
+        form.initial['boss_took_it_buying_up'] = buying_up_reports_BUYING_UP.boss_took_it
+        form.initial['cash_register_end_buying_up'] = buying_up_reports_BUYING_UP.cash_register_end
+        # PAWNSHOP.
+        form.initial['cas_register_pawnshop'] = buying_up_reports_PAWNSHOP.cas_register
+        form.initial['cash_balance_beginning_pawnshop'] = buying_up_reports_PAWNSHOP.cash_balance_beginning
+        form.initial['introduced_pawnshop'] = buying_up_reports_PAWNSHOP.introduced
+        form.initial['interest_return_pawnshop'] = buying_up_reports_PAWNSHOP.interest_return
+        form.initial['loans_issued_pawnshop'] = buying_up_reports_PAWNSHOP.loans_issued
+        form.initial['used_farming_pawnshop'] = buying_up_reports_PAWNSHOP.used_farming
+        form.initial['boss_took_it_pawnshop'] = buying_up_reports_PAWNSHOP.boss_took_it
+        form.initial['cash_register_end_pawnshop'] = buying_up_reports_PAWNSHOP.cash_register_end
+        # TECHNIQUE.
+        form.initial['cas_register_technique'] = buying_up_reports_TECHNIQUE.cas_register
+        form.initial['cash_balance_beginning_technique'] = buying_up_reports_TECHNIQUE.cash_balance_beginning
+        form.initial['introduced_technique'] = buying_up_reports_TECHNIQUE.introduced
+        form.initial['interest_return_technique'] = buying_up_reports_TECHNIQUE.interest_return
+        form.initial['loans_issued_technique'] = buying_up_reports_TECHNIQUE.loans_issued
+        form.initial['used_farming_technique'] = buying_up_reports_TECHNIQUE.used_farming
+        form.initial['boss_took_it_technique'] = buying_up_reports_TECHNIQUE.boss_took_it
+        form.initial['cash_register_end_technique'] = buying_up_reports_TECHNIQUE.cash_register_end
 
-        form.initial['cas_register_buying_up'] = CashRegisterChoices.BUYING_UP
-        # form.initial[''] =
-        form.initial['cash_register_end_buying_up'] = current_balance_['buying_up']
-
-
-        form.initial['cas_register_pawnshop'] = CashRegisterChoices.PAWNSHOP
-        form.initial['cash_register_end_pawnshop'] = current_balance_['pawnshop']
-
-        form.initial['cas_register_technique'] = CashRegisterChoices.TECHNIQUE
-        form.initial['cash_register_end_technique'] = current_balance_['technique']
-
-        # Отключаю поля для редактирования.
+        # ОТКЛЮЧАЮ ПОЛЯ ДЛЯ РЕДАКТИРОВАНИЯ.
+        form.fields['author'].disabled = True
+        form.fields['id_address'].disabled = True
+        form.fields['data'].disabled = True
+        # BUYING_UP.
         form.fields['cas_register_buying_up'].disabled = True
         form.fields['cash_balance_beginning_buying_up'].disabled = True
+        form.fields['introduced_buying_up'].disabled = True
+        form.fields['interest_return_buying_up'].disabled = True
+        form.fields['loans_issued_buying_up'].disabled = True
+        form.fields['used_farming_buying_up'].disabled = True
+        form.fields['boss_took_it_buying_up'].disabled = True
+        form.fields['cash_register_end_buying_up'].disabled = True
+        # PAWNSHOP.
         form.fields['cas_register_pawnshop'].disabled = True
         form.fields['cash_balance_beginning_pawnshop'].disabled = True
+        form.fields['introduced_pawnshop'].disabled = True
+        form.fields['interest_return_pawnshop'].disabled = True
+        form.fields['loans_issued_pawnshop'].disabled = True
+        form.fields['used_farming_pawnshop'].disabled = True
+        form.fields['boss_took_it_pawnshop'].disabled = True
+        form.fields['cash_register_end_pawnshop'].disabled = True
+        # TECHNIQUE.
         form.fields['cas_register_technique'].disabled = True
         form.fields['cash_balance_beginning_technique'].disabled = True
-        form.fields['cash_register_end_buying_up'].disabled = True
-        form.fields['cash_register_end_pawnshop'].disabled = True
+        form.fields['introduced_technique'].disabled = True
+        form.fields['interest_return_technique'].disabled = True
+        form.fields['loans_issued_technique'].disabled = True
+        form.fields['used_farming_technique'].disabled = True
+        form.fields['boss_took_it_technique'].disabled = True
         form.fields['cash_register_end_technique'].disabled = True
 
         # Запрет на редактирование статуса.
         if hasattr(form, 'fields') and 'status' in form.fields:
             form.fields['status'].disabled = True
-
-        print(f"Selected address ID: {selected_address_id}")
-        print(f"Current balances: {current_balance_}")
 
         return form
 

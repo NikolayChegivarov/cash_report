@@ -90,7 +90,7 @@ class MultiCashReportForm(forms.Form):
 
     author = forms.ModelChoiceField(queryset=CustomUser.objects.all())
     id_address = forms.ModelChoiceField(queryset=Address.objects.all())
-    data = forms.CharField(widget=forms.Textarea(attrs={'rows': 5}), required=False)
+    data = forms.CharField(widget=forms.Textarea(attrs={'rows': 1}), required=False)
 
     # Формы для скупки.
     cas_register_buying_up = forms.ChoiceField(choices=CashRegisterChoices.choices, initial='BUYING_UP')
@@ -203,13 +203,4 @@ class MultiCashReportForm(forms.Form):
         calculate_cash_register_end(self, cleaned_data, 'technique')
         return cleaned_data
 
-
-class ResultForm(forms.Form):
-
-    today_date = forms.DateField()
-
-    # ТП Адрес
-    # Дата, cash_register, balance
-
-    pass
 

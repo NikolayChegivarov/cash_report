@@ -110,8 +110,25 @@ class CashReport(models.Model):  # Кассовый отчет.
     )
 
     class Meta:
-        unique_together = ('shift_date', 'id_address',)  # Комбинация уникальна как primary_key.
+        unique_together = ('shift_date', 'id_address', 'cas_register', 'cash_balance_beginning', 'introduced',
+                           'interest_return', 'loans_issued', 'used_farming', 'boss_took_it', 'cash_register_end')
+        # Комбинация уникальна как primary_key.
 
     def __str__(self):
-        return f"{self.shift_date} - {self.id_address}"
+        fields = [
+            f"shift_date: {self.shift_date}",
+            f"id_address: {self.id_address}",
+            f"cas_register: {self.cas_register}",
+            f"cash_balance_beginning: {self.cash_balance_beginning}",
+            f"introduced: {self.introduced}",
+            f"interest_return: {self.interest_return}",
+            f"loans_issued: {self.loans_issued}",
+            f"used_farming: {self.used_farming}",
+            f"boss_took_it: {self.boss_took_it}",
+            f"cash_register_end: {self.cash_register_end}",
+            f"author: {self.author}",
+            f"updated_at: {self.updated_at}",
+            f"status: {self.status}"
+        ]
+        return "\n".join(fields)
 

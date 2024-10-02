@@ -1,13 +1,11 @@
-# import datetime
 from datetime import datetime
-
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from cashbox_app.models import Address, CashReport, CustomUser, CashReportStatusChoices, CashRegisterChoices
 
 
-# Форма для страницы авторизации.
 class CustomAuthenticationForm(AuthenticationForm):
+    """Форма для аутентификации пользователей."""
     username = forms.ModelChoiceField(
         queryset=CustomUser.objects.filter(is_active=True),
         to_field_name='username',
@@ -20,8 +18,9 @@ class CustomAuthenticationForm(AuthenticationForm):
         fields = ['username', 'password']
 
 
-# Для создания адреса или редактирования существующего.
 class AddressForm(forms.ModelForm):
+    """Форма для создания адреса или редактирования существующего."""
+
     class Meta:
         model = Address
         fields = ['city', 'street', 'home']
@@ -29,10 +28,29 @@ class AddressForm(forms.ModelForm):
 
 # Форма выбора адреса.
 class AddressSelectionForm(forms.Form):
+    """Форма для выбора адреса."""
     addresses = forms.ModelChoiceField(queryset=Address.objects.all(), empty_label="Выберите адрес")
 
 
+def calculate_cash_register_end(self, cleaned_data, register_type):
+    """Функция для подсчета баланса с учетом изменений."""
+    fields = [
+        f'cash_balance_beginning_{register_type}',
+        f'introduced_{register_type}',
+        f'interest_return_{register_type}',
+        f'loans_issued_{register_type}',
+        f'used_farming_{register_type}',
+        f'boss_took_it_{register_type}'
+    ]
+
+    total = sum(float(cleaned_data.get(field, 0)) for field in fields[:3])
+    total -= sum(float(cleaned_data.get(field, 0)) for field in fields[3:])
+
+    cleaned_data[f'cash_register_end_{register_type}'] = round(total, 2)
+
+
 class CashReportForm(forms.ModelForm):
+    """Форма для внесения изменений в кассовых балансах."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -67,26 +85,8 @@ class CashReportForm(forms.ModelForm):
         return cleaned_data
 
 
-def calculate_cash_register_end(self, cleaned_data, register_type):
-    print(f'Используется функция подсчета остатка на конец дня: calculate_cash_register_end')
-    print(f'cleaned_data_________{cleaned_data}')
-    fields = [
-        f'cash_balance_beginning_{register_type}',
-        f'introduced_{register_type}',
-        f'interest_return_{register_type}',
-        f'loans_issued_{register_type}',
-        f'used_farming_{register_type}',
-        f'boss_took_it_{register_type}'
-    ]
-
-    total = sum(float(cleaned_data.get(field, 0)) for field in fields[:3])
-    total -= sum(float(cleaned_data.get(field, 0)) for field in fields[3:])
-
-    cleaned_data[f'cash_register_end_{register_type}'] = round(total, 2)
-
-
 class MultiCashReportForm(forms.Form):
-    print(f"MultiCashReportForm")
+    """Объединяет несколько типов отчетов (покупки, ломбард, техника) в одну форму."""
 
     author = forms.ModelChoiceField(queryset=CustomUser.objects.all())
     id_address = forms.ModelChoiceField(queryset=Address.objects.all())
@@ -202,5 +202,3 @@ class MultiCashReportForm(forms.Form):
         # Расчет для техники
         calculate_cash_register_end(self, cleaned_data, 'technique')
         return cleaned_data
-
-

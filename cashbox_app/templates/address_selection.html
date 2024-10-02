@@ -1,9 +1,9 @@
 {% block content %}
-<h2>Select Address</h2>
+<h2>Выберите адрес:</h2>
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Select</button>
+    <button type="submit">Выбрать адрес</button>
 </form>
 {% endblock %}
 

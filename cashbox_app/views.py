@@ -1,21 +1,12 @@
 from django.contrib.auth.views import LoginView
-from django.views.generic import TemplateView, FormView
-from django.urls import reverse_lazy
-from django.shortcuts import redirect, render
-from cashbox_app.forms import CustomAuthenticationForm, AddressForm, CashReportForm, AddressSelectionForm
+from cashbox_app.forms import CustomAuthenticationForm, AddressSelectionForm
 from cashbox_app.models import Address, CashReport, CashRegisterChoices
-
 from django.views.generic import FormView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import MultiCashReportForm
-# from django.db.models import Q
-from django.db.models import F
 from django.db.models import Max
-from django.utils import timezone
-from django.views.generic.base import View
 from django.utils.timezone import now
-from datetime import datetime
 
 
 # Страница авторизации с переходом на страницу выбор адреса.
@@ -331,7 +322,6 @@ class ReportSubmittedView(FormView):
     def get_success_url(self):
         return reverse_lazy('login')
 
-
     # URL, на который пользователь будет перенаправлен после успешной отправки формы
     # "Сменить пользователя"
     # success_url = reverse_lazy('login')
@@ -339,5 +329,3 @@ class ReportSubmittedView(FormView):
     # success_url = reverse_lazy('address_selection.html')
     # # "Новый день"
     # success_url = reverse_lazy('cash_report_form.html')
-
-

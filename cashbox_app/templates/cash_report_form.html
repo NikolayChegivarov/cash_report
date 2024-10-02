@@ -1,5 +1,5 @@
 {% block content %}
-<h2>Форма заполнения для сотрудников</h2>
+<h2>Внесите изменения в кассах:</h2>
 <form method="post">
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ next }}">
@@ -23,54 +23,56 @@
 
         </thead>
         <tbody>
-            <tr>
-                <td>Вид кассы:</td>
-                <td>{{ form.cas_register_buying_up }}</td>
-                <td>{{ form.cas_register_pawnshop }}</td>
-                <td>{{ form.cas_register_technique }}</td>
-            </tr>
-            <tr>
-                <td>Остаток денежных средств в начале:</td>
-                <td>{{ form.cash_balance_beginning_buying_up }}</td>
-                <td>{{ form.cash_balance_beginning_pawnshop }}</td>
-                <td>{{ form.cash_balance_beginning_technique }}</td>
-            </tr>
-            <tr>
-                <td>Внесено в кассу:</td>
-                <td>{{ form.introduced_buying_up }}</td>
-                <td>{{ form.introduced_pawnshop }}</td>
-                <td>{{ form.introduced_technique }}</td>
-            </tr>
-            <tr>
-                <td>Средства от процентов с залога, возврата выданных займов:</td>
-                <td>{{ form.interest_return_buying_up }}</td>
-                <td>{{ form.interest_return_pawnshop }}</td>
-                <td>{{ form.interest_return_technique }}</td>
-            </tr>
-            <tr>
-                <td>Выдано займов:</td>
-                <td>{{ form.loans_issued_buying_up }}</td>
-                <td>{{ form.loans_issued_pawnshop }}</td>
-                <td>{{ form.loans_issued_technique }}</td>
-            </tr>
-            <tr>
-                <td>На хоз. нужды, оплату труда:</td>
-                <td>{{ form.used_farming_buying_up }}</td>
-                <td>{{ form.used_farming_pawnshop }}</td>
-                <td>{{ form.used_farming_technique }}</td>
-            </tr>
-            <tr>
-                <td>Выемка денежных средств руководителем:</td>
-                <td>{{ form.boss_took_it_buying_up }}</td>
-                <td>{{ form.boss_took_it_pawnshop }}</td>
-                <td>{{ form.boss_took_it_technique }}</td>
-            </tr>
-<!--            <tr>-->
-<!--                <td>Остаток на конец дня:</td>-->
-<!--                <td id="cash_register_end_buying_up">{{ form.cash_register_end_buying_up }}</td>-->
-<!--                <td id="cash_register_end_pawnshop">{{ form.cash_register_end_pawnshop }}</td>-->
-<!--                <td id="cash_register_end_technique">{{ form.cash_register_end_technique }}</td>-->
-<!--            </tr>-->
+
+        <tr>
+            <td>Вид кассы:</td>
+            <td>{{ form.cas_register_buying_up }}</td>
+            <td>{{ form.cas_register_pawnshop }}</td>
+            <td>{{ form.cas_register_technique }}</td>
+        </tr>
+
+        <tr>
+            <td>Остаток денежных средств в начале:</td>
+            <td>{{ form.cash_balance_beginning_buying_up }}</td>
+            <td>{{ form.cash_balance_beginning_pawnshop }}</td>
+            <td>{{ form.cash_balance_beginning_technique }}</td>
+        </tr>
+
+        <tr>
+            <td>Внесено в кассу:</td>
+            <td>{{ form.introduced_buying_up }}</td>
+            <td>{{ form.introduced_pawnshop }}</td>
+            <td>{{ form.introduced_technique }}</td>
+        </tr>
+
+        <tr>
+            <td>Средства от процентов с залога, возврата выданных займов:</td>
+            <td>{{ form.interest_return_buying_up }}</td>
+            <td>{{ form.interest_return_pawnshop }}</td>
+            <td>{{ form.interest_return_technique }}</td>
+        </tr>
+
+        <tr>
+            <td>Выдано займов:</td>
+            <td>{{ form.loans_issued_buying_up }}</td>
+            <td>{{ form.loans_issued_pawnshop }}</td>
+            <td>{{ form.loans_issued_technique }}</td>
+        </tr>
+
+        <tr>
+            <td>На хоз. нужды, оплату труда:</td>
+            <td>{{ form.used_farming_buying_up }}</td>
+            <td>{{ form.used_farming_pawnshop }}</td>
+            <td>{{ form.used_farming_technique }}</td>
+        </tr>
+
+        <tr>
+            <td>Выемка денежных средств руководителем:</td>
+            <td>{{ form.boss_took_it_buying_up }}</td>
+            <td>{{ form.boss_took_it_pawnshop }}</td>
+            <td>{{ form.boss_took_it_technique }}</td>
+        </tr>
+
         </tbody>
     </table>
 
@@ -82,62 +84,5 @@
     <button type="submit">Сохранить</button>
 </form>
 
-<!--<script>-->
-<!--    // Добавляем слушатель события для загрузки DOM-->
-<!--    document.addEventListener('DOMContentLoaded', function() {-->
-<!--        ['buying_up', 'pawnshop', 'technique'].forEach(type => {-->
-<!--            // Определяем массив полей для каждого типа-->
-<!--            const fields = [-->
-<!--                `cash_balance_beginning_${type}`,-->
-<!--                `${type}_introduced`,-->
-<!--                `${type}_interest_return`,-->
-<!--                `${type}_loans_issued`,-->
-<!--                `${type}_used_farming`,-->
-<!--                `${type}_boss_took_it`-->
-<!--            ];-->
-
-<!--            // Добавляем слушатели событий для каждого поля-->
-<!--            fields.forEach(field => {-->
-<!--                document.querySelector(`input[name="${field}"]`).addEventListener('input', function() {-->
-<!--                    calculateCashRegisterEnd(type);-->
-<!--                });-->
-<!--            });-->
-
-<!--            // Функция для расчета конечного состояния кассы-->
-<!--            function calculateCashRegisterEnd(type) {-->
-<!--                let total = parseFloat(document.querySelector(`input[name="cash_balance_beginning_${type}"]`).value || 0);-->
-<!--                total += parseFloat(document.querySelector(`input[name="${type}_introduced"]`).value || 0);-->
-<!--                total += parseFloat(document.querySelector(`input[name="${type}_interest_return"]`).value || 0);-->
-<!--                total -= parseFloat(document.querySelector(`input[name="${type}_loans_issued"]`).value || 0);-->
-<!--                total -= parseFloat(document.querySelector(`input[name="${type}_used_farming"]`).value || 0);-->
-<!--                total -= parseFloat(document.querySelector(`input[name="${type}_boss_took_it"]`).value || 0);-->
-
-<!--                document.querySelector(`input[name="cash_register_end_${type}"]`).value = total.toFixed(2);-->
-<!--            }-->
-<!--        });-->
-
-<!--        // Слушатель события отправки формы-->
-<!--        document.querySelector('form').addEventListener('submit', function(e) {-->
-<!--            e.preventDefault();-->
-<!--            const formData = new FormData(this);-->
-<!--            fetch('/api/cash-report/', {-->
-<!--                method: 'POST',-->
-<!--                body: formData-->
-<!--            })-->
-<!--            .then(response => response.json())-->
-<!--            .then(data => {-->
-<!--                if (data.success) {-->
-<!--                    alert('Данные сохранены успешно!');-->
-<!--                } else {-->
-<!--                    alert('Произошла ошибка при сохранении данных.');-->
-<!--                }-->
-<!--            })-->
-<!--            .catch(error => {-->
-<!--                console.error('Error:', error);-->
-<!--                alert('Произошла ошибка при отправке данных.');-->
-<!--            });-->
-<!--        });-->
-<!--    });-->
-<!--</script>-->
 
 {% endblock %}

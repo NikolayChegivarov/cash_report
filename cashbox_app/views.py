@@ -9,28 +9,36 @@ from django.db.models import Max
 from django.utils.timezone import now
 
 
-# Страница авторизации с переходом на страницу выбор адреса.
 class CustomLoginView(LoginView):
+    """Представление для авторизации."""
     template_name = 'login.html'
     form_class = CustomAuthenticationForm
     success_url = reverse_lazy('address_selection')  # .html
 
     def form_valid(self, form):
-        """Функция только для вывода пользователя в консоль."""
+        """
+        Проверяет валидность формы и выполняет действия при успешной валидации.
+
+        Этот метод вызывается после того, как форма была успешно валидирана.
+        Он проверяет данные формы, выводит имя пользователя и затем передает управление родительскому классу.
+
+        :param form: Объект формы Django, содержащий очищенные данные
+        :return: True, если форма валидна, False в противном случае
+        """
         user = form.cleaned_data.get('username')
         print(f'Вошел пользователь: {user}')
         return super().form_valid(form)
 
     def get_success_url(self):
-        # Переопределяем метод для получения URL перенаправления после успешного входа
+        """Возвращает URL успешного завершения для текущего представления."""
         return self.success_url
 
 
-# Выбор адреса с переходом на страницу заполнения отчета.
 class AddressSelectionView(FormView):
+    """Представление для выбора адреса."""
     template_name = 'address_selection.html'
     form_class = AddressSelectionForm
-    success_url = reverse_lazy('cash_report_form')  # .html
+    success_url = reverse_lazy('cash_report_form')
 
     def form_valid(self, form):
         selected_address = form.cleaned_data['addresses']
@@ -39,22 +47,21 @@ class AddressSelectionView(FormView):
         # Получаем текущего пользователя
         current_user = self.request.user
 
-        # Распечатываем сообщение
         print(f'Пользователь {current_user} выбрал адрес {selected_address}')
 
         return super().form_valid(form)
 
     def get_success_url(self):
-        # Переопределяем метод для получения URL перенаправления после успешного выбора адреса
+        """Возвращает URL успешного завершения для текущего представления."""
         return self.success_url
 
 
 def current_balance(address_id):
-    """Получение текущего баланса кассы"""
+    """Функция для получения текущего баланса кассы"""
     # Создаю словарь с балансами касс.
     balance = {'buying_up': None, 'pawnshop': None, 'technique': None}
 
-    # Получаем все отчеты по скупке для указанного адреса
+    # BUYING_UP
     buying_up_reports_BUYING_UP = CashReport.objects.filter(
         cas_register=CashRegisterChoices.BUYING_UP,
         id_address_id=address_id
@@ -71,7 +78,7 @@ def current_balance(address_id):
         balance['buying_up'] = 0
         print(f"Отчетов по скупке для адреса {address_id} не найдено")
 
-    # Получаем все отчеты по ломбарду для указанного адреса.
+    # PAWNSHOP
     buying_up_reports_PAWNSHOP = CashReport.objects.filter(
         cas_register=CashRegisterChoices.PAWNSHOP,
         id_address_id=address_id
@@ -86,7 +93,7 @@ def current_balance(address_id):
         balance['pawnshop'] = 0
         print(f"Отчетов по скупке для адреса {address_id} не найдено")
 
-    # Получаем все отчеты по ломбарду для указанного адреса.
+    # TECHNIQUE
     buying_up_reports_TECHNIQUE = CashReport.objects.filter(
         cas_register=CashRegisterChoices.TECHNIQUE,
         id_address_id=address_id
@@ -105,31 +112,44 @@ def current_balance(address_id):
 
 
 class CashReportFormView(LoginRequiredMixin, FormView):
+    """Представление для внесения изменений в кассовых балансах."""
+
     template_name = 'cash_report_form.html'
     form_class = MultiCashReportForm
 
     def get_initial(self):
+        """
+        Функция для получения начальных значений данных формы.
+
+        Возвращает словарь с начальными значениями полей формы,
+        включая выбранный адрес и автора (текущего пользователя).
+        """
         initial = {}
         selected_address_id = self.request.session.get('selected_address_id')
         if selected_address_id:
             initial['id_address'] = Address.objects.get(id=selected_address_id)
         initial['author'] = self.request.user
 
-        # Распечатка содержимого request
-        print("-" * 50)
-        print("Содержимое request:")
-        for attr_name in dir(self.request):
-            if not attr_name.startswith('__'):
-                try:
-                    value = getattr(self.request, attr_name)
-                    print(f"{attr_name}: {value}")
-                except Exception as e:
-                    print(f"Ошибка при доступе к {attr_name}: {str(e)}")
-        print("-" * 50)
+        # # Распечатка содержимого request
+        # print("-" * 50)
+        # print("Содержимое request:")
+        # for attr_name in dir(self.request):
+        #     if not attr_name.startswith('__'):
+        #         try:
+        #             value = getattr(self.request, attr_name)
+        #             print(f"{attr_name}: {value}")
+        #         except Exception as e:
+        #             print(f"Ошибка при доступе к {attr_name}: {str(e)}")
+        # print("-" * 50)
 
         return initial
 
     def post(self, request, *args, **kwargs):
+        """
+        Этот метод обрабатывает отправку формы на сервер.
+        Он проверяет валидность формы, если форма валидна, то сохраняет данные и возвращает успешный ответ.
+        Если форма невалидна, то выводит ошибки и возвращает ответ о некорректности данных.
+        """
         form = self.get_form()
         if form.is_valid():
             result = form.save()
@@ -139,11 +159,10 @@ class CashReportFormView(LoginRequiredMixin, FormView):
             print("Форма невалидна:", form.errors)
             return self.form_invalid(form)
 
-    def get_success_url(self):
-        return reverse_lazy('report_submitted')
-
     def get_form(self, form_class=None):
-        """Конфигурирует форму, отключая поля, которые не должны быть изменены."""
+        """
+        Конфигурирует форму, отключая поля, которые не должны быть изменены.
+        """
         # Получает экземпляр формы из родительского класса
         form = super().get_form(form_class)
 
@@ -154,28 +173,21 @@ class CashReportFormView(LoginRequiredMixin, FormView):
         else:
             form.fields['id_address'].queryset = Address.objects.all()[:1]
 
-        # Отключает поле id_address для редактирования
-        form.fields['id_address'].disabled = True
-
-        # Отключает поле author для редактирования
-        form.fields['author'].disabled = True
-
         # Получаем актуальные балансы касс
         current_balance_ = current_balance(selected_address_id)
 
         # Устанавливаю значения для полей.
         form.initial['data'] = now().strftime('%Y-%m-%d')
-
         form.initial['cas_register_buying_up'] = CashRegisterChoices.BUYING_UP
         form.initial['cash_balance_beginning_buying_up'] = current_balance_['buying_up']
-
         form.initial['cas_register_pawnshop'] = CashRegisterChoices.PAWNSHOP
         form.initial['cash_balance_beginning_pawnshop'] = current_balance_['pawnshop']
-
         form.initial['cas_register_technique'] = CashRegisterChoices.TECHNIQUE
         form.initial['cash_balance_beginning_technique'] = current_balance_['technique']
 
         # Отключаю поля для редактирования
+        form.fields['id_address'].disabled = True
+        form.fields['author'].disabled = True
         form.fields['cas_register_buying_up'].disabled = True
         form.fields['cash_balance_beginning_buying_up'].disabled = True
         form.fields['cas_register_pawnshop'].disabled = True
@@ -195,11 +207,16 @@ class CashReportFormView(LoginRequiredMixin, FormView):
 
         return form
 
+    def get_success_url(self):
+        """Возвращает URL успешного завершения для текущего представления."""
+        return reverse_lazy('report_submitted')
+
 
 class ReportSubmittedView(FormView):
-    # Указывает имя шаблона для отображения формы
+    """
+    Форма с результатом сохранения изменений в балансах касс.
+    """
     template_name = 'report_submitted.html'
-    # form_class = ResultForm
     form_class = MultiCashReportForm
 
     def get_initial(self):
@@ -212,8 +229,9 @@ class ReportSubmittedView(FormView):
         return initial
 
     def get_form(self, form_class=None):
-        """Конфигурирует форму, отключая поля, которые не должны быть изменены."""
-        # Получает экземпляр формы из родительского класса
+        """
+        Конфигурирует форму, отключая поля, которые не должны быть изменены.
+        """
         form = super().get_form(form_class)
 
         # Ограничивает queryset поля id_address только одним выбранным адресом
@@ -320,6 +338,7 @@ class ReportSubmittedView(FormView):
         return form
 
     def get_success_url(self):
+        """Возвращает URL успешного завершения для текущего представления."""
         return reverse_lazy('login')
 
     # URL, на который пользователь будет перенаправлен после успешной отправки формы

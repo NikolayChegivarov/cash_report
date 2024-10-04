@@ -1,12 +1,14 @@
 from django.contrib.auth.views import LoginView
-from cashbox_app.forms import CustomAuthenticationForm, AddressSelectionForm
-from cashbox_app.models import Address, CashReport, CashRegisterChoices
 from django.views.generic import FormView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .forms import MultiCashReportForm
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Max
 from django.utils.timezone import now
+from django.shortcuts import redirect
+from cashbox_app.forms import CustomAuthenticationForm, AddressSelectionForm
+from cashbox_app.models import Address, CashReport, CashRegisterChoices
+from .forms import MultiCashReportForm
 
 
 class CustomLoginView(LoginView):
@@ -337,14 +339,15 @@ class ReportSubmittedView(FormView):
 
         return form
 
-    def get_success_url(self):
-        """Возвращает URL успешного завершения для текущего представления."""
-        return reverse_lazy('login')
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if form.is_valid():
+            submit_button = request.POST.get('submit_button')
+            if submit_button == 'Сменить пользователя':
+                return redirect(reverse_lazy('login'))
+            elif submit_button == 'Сменить адрес':
+                return redirect(reverse_lazy('address_selection'))
+            elif submit_button == 'Новый день':
+                return redirect(reverse_lazy('cash_report_form'))
 
-    # URL, на который пользователь будет перенаправлен после успешной отправки формы
-    # "Сменить пользователя"
-    # success_url = reverse_lazy('login')
-    # # "Сменить адрес"
-    # success_url = reverse_lazy('address_selection.html')
-    # # "Новый день"
-    # success_url = reverse_lazy('cash_report_form.html')
+        return self.render_to_response(self.get_context_data(form=form))

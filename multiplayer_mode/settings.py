@@ -28,6 +28,9 @@ SECRET_KEY = 'django-insecure-fad@(m3(wrnmldah=%w2h&*u*xryf8hm^wnjf%5ir%22w092^j
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 
 ALLOWED_HOSTS = []
 
@@ -139,7 +142,7 @@ REST_FRAMEWORK = {
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type

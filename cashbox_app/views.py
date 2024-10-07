@@ -15,7 +15,8 @@ class CustomLoginView(LoginView):
     """Представление для авторизации."""
     template_name = 'login.html'
     form_class = CustomAuthenticationForm
-    success_url = reverse_lazy('address_selection')  # .html
+
+    # success_url = reverse_lazy('address_selection')  # .html
 
     def form_valid(self, form):
         """
@@ -28,12 +29,28 @@ class CustomLoginView(LoginView):
         :return: True, если форма валидна, False в противном случае
         """
         user = form.cleaned_data.get('username')
-        print(f'Вошел пользователь: {user}')
-        return super().form_valid(form)
+        # print(f'Вошел пользователь: {user}')
+        # print(f"Пользователь: {user}, тип: {type(user)}")
+        # print(f"Строка сравнения: {user} == 'Руководитель'")
 
-    def get_success_url(self):
-        """Возвращает URL успешного завершения для текущего представления."""
-        return self.success_url
+        user_str = str(user)
+
+        # print(f'user_str = {type(user_str)}')
+        # print(f"Пользователь user_str: {user}, тип: {type(user)}")
+        if user_str == "Руководитель":
+            print('Это Руководитель')
+            return redirect(reverse_lazy('koroleva'))
+        else:
+            return redirect(reverse_lazy('address_selection'))
+
+    # def get_success_url(self):
+    #     """Возвращает URL успешного завершения для текущего представления."""
+    #     return super().get_success_url()
+
+
+class KorolevaView(FormView):
+    template_name = 'koroleva.html'
+    form_class = AddressSelectionForm  # Временный.
 
 
 class AddressSelectionView(FormView):

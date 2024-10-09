@@ -9,6 +9,7 @@ from django.shortcuts import redirect
 from cashbox_app.forms import CustomAuthenticationForm, AddressSelectionForm
 from cashbox_app.models import Address, CashReport, CashRegisterChoices
 from .forms import MultiCashReportForm
+from django.contrib.auth import login, authenticate
 
 
 class CustomLoginView(LoginView):
@@ -28,24 +29,27 @@ class CustomLoginView(LoginView):
         :param form: Объект формы Django, содержащий очищенные данные
         :return: True, если форма валидна, False в противном случае
         """
-        user = form.cleaned_data.get('username')
-        # print(f'Вошел пользователь: {user}')
-        # print(f"Пользователь: {user}, тип: {type(user)}")
-        # print(f"Строка сравнения: {user} == 'Руководитель'")
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password')
 
-        user_str = str(user)
+        # Authenticate the user
+        user = authenticate(username=username, password=password)
 
-        # print(f'user_str = {type(user_str)}')
-        # print(f"Пользователь user_str: {user}, тип: {type(user)}")
-        if user_str == "Руководитель":
-            print('Это Руководитель')
-            return redirect(reverse_lazy('koroleva'))
+        if user is not None:
+            login(self.request, user)
+
+            user_str = str(user.username)
+
+            print(f'Пользователь вошел: {user_str}')
+
+            if user_str == "Руководитель":
+                return redirect(reverse_lazy('koroleva'))
+            else:
+                return redirect(reverse_lazy('address_selection'))
         else:
-            return redirect(reverse_lazy('address_selection'))
-
-    # def get_success_url(self):
-    #     """Возвращает URL успешного завершения для текущего представления."""
-    #     return super().get_success_url()
+            # Handle invalid credentials
+            print("Неверные учетные данные")
+            return self.form_invalid(form)
 
 
 class KorolevaView(FormView):
@@ -66,7 +70,11 @@ class AddressSelectionView(FormView):
         # Получаем текущего пользователя
         current_user = self.request.user
 
-        print(f'Пользователь {current_user} выбрал адрес {selected_address}')
+        # Проверяем, является ли пользователь аутентифицированным
+        if current_user.is_authenticated:
+            print(f'Аутентифицированный пользователь {current_user.username} выбрал адрес {selected_address}')
+        else:
+            print("Ошибка: пользователь не аутентифицирован")
 
         return super().form_valid(form)
 

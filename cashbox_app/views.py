@@ -1,5 +1,5 @@
 from django.contrib.auth.views import LoginView
-from django.views.generic import FormView
+from django.views.generic import FormView, TemplateView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
@@ -376,3 +376,15 @@ class ReportSubmittedView(FormView):
                 return redirect(reverse_lazy('cash_report_form'))
 
         return self.render_to_response(self.get_context_data(form=form))
+
+
+class KorolevaView(TemplateView):
+    template_name = 'koroleva.html'
+
+
+class CountVisitsView(TemplateView):
+    template_name = 'count_visits.html'
+    
+
+class KorolevaCashReportView(TemplateView):
+    template_name = 'coroleva_cash_report.html'

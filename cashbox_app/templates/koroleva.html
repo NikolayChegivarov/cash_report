@@ -6,6 +6,12 @@
 </head>
 <body>
 <h1>Добро пожаловать, Руководитель!</h1>
-<!-- Add any other content specific to the manager -->
+<h2>Выбери нужный отчет</h2>
+
+<button onclick="window.location.href='{% url 'coroleva_cash_report' %}'">Кассовый отчет</button>
+<button onclick="window.location.href='{% url 'count_visits' %}'">Количество посещений</button>
+
+<!-- Добавьте здесь любую другую содержимое, специфичное для менеджера -->
+
 </body>
 </html>

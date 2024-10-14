@@ -16,7 +16,7 @@ https://docs.djangoproject.com/en/5.0/topics/http/urls/.
 from django.contrib import admin
 from django.urls import path
 from cashbox_app.views import CustomLoginView, AddressSelectionView, CashReportFormView, ReportSubmittedView, \
-    KorolevaView, CountVisitsView, KorolevaCashReportView
+    KorolevaView, CountVisitsView, CountVisitsBriefView, CountVisitsFullView, KorolevaCashReportView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,7 +27,8 @@ urlpatterns = [
     path('koroleva/', KorolevaView.as_view(), name='koroleva'),
 
     path('count_visits/', CountVisitsView.as_view(), name='count_visits'),
+    path('count_visits/brief', CountVisitsBriefView.as_view(), name='count_visits_brief'),
+    path('count_visits/full', CountVisitsFullView.as_view(), name='count_visits_full'),
 
     path('cash_report/', KorolevaCashReportView.as_view(), name='coroleva_cash_report'),
-
 ]

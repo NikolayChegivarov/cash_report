@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Краткий отчет</title>
+</head>
+<body>
+<h1>Краткий отчет за {{ selected_year }}-{{ selected_month }}</h1>
+
+{% if query_results %}
+<table border="1">
+    <tr>
+        <th>Пользователь</th>
+        <th>Количество посещений</th>
+    </tr>
+    {% for result in query_results %}
+    <tr>
+        <td>{{ result.author.username }}</td>
+        <td>{{ result.count_visits }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>Нет данных для отображения.</p>
+{% endif %}
+</body>
+</html>

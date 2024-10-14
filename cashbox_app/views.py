@@ -1,15 +1,24 @@
 from django.contrib.auth.views import LoginView
 from django.views.generic import FormView, TemplateView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Max
 from django.utils.timezone import now
 from django.shortcuts import redirect
+from django.contrib.auth import login, authenticate
+from django.shortcuts import render
+from django.views.generic import TemplateView
+from django import forms
+from django.http import HttpResponse
 from cashbox_app.forms import CustomAuthenticationForm, AddressSelectionForm
 from cashbox_app.models import Address, CashReport, CashRegisterChoices
-from .forms import MultiCashReportForm
-from django.contrib.auth import login, authenticate
+from .forms import MultiCashReportForm, YearMonthForm
+from django.shortcuts import render, redirect
+
+from django.db.models import Count
+from django.db.models.functions import TruncMonth, TruncYear
+from cashbox_app.models import CashReport, CustomUser
 
 
 class CustomLoginView(LoginView):
@@ -384,7 +393,62 @@ class KorolevaView(TemplateView):
 
 class CountVisitsView(TemplateView):
     template_name = 'count_visits.html'
-    
+
+    def get(self, request, *args, **kwargs):
+        form = YearMonthForm()
+        return self.render_to_response({'form': form})
+
+    def post(self, request, *args, **kwargs):
+        form = YearMonthForm(request.POST)
+        if form.is_valid():
+            year = form.cleaned_data['year']
+            month = form.cleaned_data['month']
+
+            # Сохраняем данные в сессии
+            request.session['selected_year'] = year
+            request.session['selected_month'] = month
+
+            # Перенаправляем на главную страницу
+            return redirect(reverse('count_visits'))
+
+        return self.render_to_response({'form': form})
+
+
+class CountVisitsBriefView(TemplateView):
+    """Краткий отчет."""
+    template_name = 'count_visits_brief.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        selected_year = self.request.session.get('selected_year')
+        selected_month = self.request.session.get('selected_month')
+        print(f'Месяц, год:, {selected_year}{selected_month} ')
+
+        if selected_year and selected_month:
+            query = CashReport.objects.filter(
+                author__is_active=True,
+                updated_at__year=selected_year,
+                updated_at__month=selected_month
+            ).values('author').annotate(count_visits=Count('updated_at', distinct=True)).order_by()
+
+            context['query_results'] = query
+
+        return context
+
+
+# Аналогично создаем класс для полного отчета
+class CountVisitsFullView(TemplateView):
+    """Полный отчет."""
+    template_name = 'count_visits_full.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['year'] = self.request.session.get('selected_year')
+        context['month'] = self.request.session.get('selected_month')
+        return context
+
 
 class KorolevaCashReportView(TemplateView):
+    """Отчет по кассам."""
     template_name = 'coroleva_cash_report.html'

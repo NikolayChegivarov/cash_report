@@ -202,3 +202,28 @@ class MultiCashReportForm(forms.Form):
         # Расчет для техники
         calculate_cash_register_end(self, cleaned_data, 'technique')
         return cleaned_data
+
+
+class YearMonthForm(forms.Form):
+    """Форма для выбора года и месяца."""
+
+    year = forms.IntegerField(
+        label='Год',
+        min_value=1900,
+        max_value=2100,
+        required=True
+    )
+
+    month = forms.IntegerField(
+        label='Месяц',
+        min_value=1,
+        max_value=12,
+        required=True
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        year = cleaned_data.get('year')
+        month = cleaned_data.get('month')
+
+        return cleaned_data

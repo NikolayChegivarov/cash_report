@@ -3,25 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <title>Краткий отчет</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
-<h1>Краткий отчет за {{ selected_year }}-{{ selected_month }}</h1>
 
-{% if query_results %}
-<table border="1">
+<h1>Краткий отчет за {{ year }}-{{ month }}</h1>
+
+<table>
     <tr>
         <th>Пользователь</th>
         <th>Количество посещений</th>
     </tr>
-    {% for result in query_results %}
+    {% for visit in visits %}
     <tr>
-        <td>{{ result.author.username }}</td>
-        <td>{{ result.count_visits }}</td>
+        <td>{{ visit.author.username }}</td>
+        <td>{{ visit.count_visits }}</td>
     </tr>
     {% endfor %}
 </table>
-{% else %}
-<p>Нет данных для отображения.</p>
-{% endif %}
+
 </body>
 </html>

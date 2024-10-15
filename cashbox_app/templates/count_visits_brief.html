@@ -29,7 +29,7 @@
     </tr>
     {% for visit in visits %}
     <tr>
-        <td>{{ visit.author.username }}</td>
+        <td>{{ visit.author }}</td>
         <td>{{ visit.count_visits }}</td>
     </tr>
     {% endfor %}
@@ -37,3 +37,4 @@
 
 </body>
 </html>
+

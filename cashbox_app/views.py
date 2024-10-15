@@ -426,10 +426,13 @@ class CountVisitsView(TemplateView):
 
 
 class CountVisitsBriefView(TemplateView):
-    """Краткий отчет."""
     template_name = 'count_visits_brief.html'
 
     def get_context_data(self, **kwargs):
+        """
+        Краткий отчет. Показывает за указанный месяц, сколько
+        каждый пользователь сделал отчетов. Пользователь - количество.
+        """
         context = super().get_context_data(**kwargs)
 
         year = self.request.GET.get('year')
@@ -445,13 +448,15 @@ class CountVisitsBriefView(TemplateView):
             report_date__month=int(month)
         )
 
+        # print(f'reports: {reports}')
+
         visits = reports.values('author').annotate(
             count_visits=Count('updated_at', distinct=True)
-        ).order_by()
+        ).order_by('count_visits')
+
+        print(f'visits: {visits}')
 
         context['visits'] = visits
-        context['year'] = year
-        context['month'] = month
 
         return context
 

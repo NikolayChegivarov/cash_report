@@ -1,39 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>Краткий отчет</title>
     <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
         }
-        th, td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: left;
+        h1 {
+            color: #333;
         }
-        th {
-            background-color: #f2f2f2;
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
+<h1>Краткий отчет</h1>
 
-<h1>Краткий отчет за {{ year }}-{{ month }}</h1>
-
-<table>
-    <tr>
-        <th>Пользователь</th>
-        <th>Количество посещений</th>
-    </tr>
-    {% for visit in visits %}
-    <tr>
-        <td>{{ visit.author }}</td>
-        <td>{{ visit.count_visits }}</td>
-    </tr>
+{% if visits %}
+<ul>
+    {% for count_visits, username in visits %}
+    <li><strong>{{ username }} отработал</strong> - {{ count_visits }} рабочих дня(ей)</li>
     {% endfor %}
-</table>
+</ul>
+{% else %}
+<p>За выбранный период нет отчетов.</p>
+{% endif %}
 
 </body>
 </html>

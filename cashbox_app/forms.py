@@ -205,7 +205,10 @@ class MultiCashReportForm(forms.Form):
 
 
 class YearMonthForm(forms.Form):
-    """Форма для выбора года и месяца."""
+    """
+    Форма для выбора года и месяца.
+    Используется в CountVisitsView
+    """
 
     year = forms.IntegerField(
         label='Год',

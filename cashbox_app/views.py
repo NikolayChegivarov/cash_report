@@ -19,8 +19,15 @@ from django.views.generic import TemplateView
 from django.db.models import Count
 from django.db.models.functions import TruncMonth, ExtractYear, ExtractMonth
 from cashbox_app.models import CashReport, CustomUser
+import pandas as pd
+import numpy as np
+from django.db.models import Prefetch
+from django.db.models import F
+from django.db.models.functions import ExtractYear, ExtractMonth, ExtractDay
 
 import logging
+
+logger = logging.getLogger(__name__)
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -403,23 +410,23 @@ class CountVisitsView(TemplateView):
         return self.render_to_response({'form': form})
 
     def post(self, request, *args, **kwargs):
-        print('Метод post')
+        print('Отправляем данные методом post:')
         form = YearMonthForm(request.POST)
 
         if form.is_valid():
             year = form.cleaned_data['year']
             month = form.cleaned_data['month']
 
-            print(f'Месяц год: {year}.{month}')
+            print(f'Год,месяц: {year}.{month}')
 
             # Определяем действие на основе названия кнопки
             action = request.POST.get('action', '')
 
             if action == 'Краткий отчет':
-                print(f'Краткий отчет')
+                print(f'Нажали "Краткий отчет"')
                 return redirect(reverse("count_visits_brief") + f"?year={year}&month={month}")
             elif action == 'Полный отчет':
-                print(f'Полный отчет')
+                print(f'Нажали "Полный отчет"')
                 return redirect(reverse("count_visits_full") + f"?year={month}&month={year}")
 
         return self.render_to_response({'form': form})
@@ -433,40 +440,118 @@ class CountVisitsBriefView(TemplateView):
         Краткий отчет. Показывает за указанный месяц, сколько
         каждый пользователь сделал отчетов. Пользователь - количество.
         """
+        # Вызываем метод родительского класса для получения начального контекста
         context = super().get_context_data(**kwargs)
 
+        logger.info(f"Starting CountVisitsBriefView with context: {context}")
+        print(f'context: {context}')
+
+        # Получаем год и месяц из запроса GET
         year = self.request.GET.get('year')
         month = self.request.GET.get('month')
 
+        print(f'Получаем Год,месяц 1: {year}.{month}')
+
+        # Проверяем, были ли указаны год и месяц
         if not (year and month):
+            # Если не указаны, возвращаем ошибку 404
             raise Http404("Не указан год или месяц")
 
+        # Проверяем наличие записей для указанного года и месяца
+        base_query = CashReport.objects.filter(updated_at__year=int(year), updated_at__month=int(month))
+        logger.debug(f"Base query count: {base_query.count()}")
+
+        # Агрегируем данные о финансовых отчетах
         reports = CashReport.objects.annotate(
             report_date=TruncMonth('updated_at')
         ).filter(
             report_date__year=int(year),
             report_date__month=int(month)
         )
+        logger.debug(f"Reports count: {reports.count()}")
+        print(f'reports 1: {reports}')
 
-        # print(f'reports: {reports}')
-
+        # Подсчитываем количество посещений для каждого автора
         visits = reports.values('author').annotate(
             count_visits=Count('updated_at', distinct=True)
         ).order_by('count_visits')
 
+        logger.debug(f"Visits data: {visits}")
         print(f'visits: {visits}')
 
-        context['visits'] = visits
+        # Получаем ID пользователей
+        user_ids = visits.values_list('author', flat=True)
+
+        # Получаем соответствующие username
+        usernames = CustomUser.objects.filter(id__in=user_ids).values_list('username', flat=True)
+
+        # Создаем словарь username по ID
+        username_dict = dict(zip(user_ids, usernames))
+
+        # Добавляем полученные данные в контекст
+        context['visits'] = list(username_dict.items())
+        context['count_visits'] = visits.values_list('count_visits', flat=True)
+
+        logger.info("Finished preparing context data")
 
         return context
 
 
-# Аналогично создаем класс для полного отчета
 class CountVisitsFullView(TemplateView):
-    """Полный отчет."""
     template_name = 'count_visits_full.html'
 
-    pass
+    def get_context_data(self, **kwargs):
+        """
+        Полный отчет. Показывает за указанный месяц, сколько
+        каждый пользователь сделал отчетов. Пользователь - количество.
+        """
+        # Вызываем метод родительского класса для получения начального контекста
+        context = super().get_context_data(**kwargs)
+
+        # Получаем год и месяц из запроса GET
+        year = self.request.GET.get('month')
+        month = self.request.GET.get('year')
+
+        print(f'Получаем Год,месяц 1: {year}.{month}')
+
+        try:
+            year_int = int(year)
+            month_int = int(month)
+
+            filtered_records = CashReport.objects.filter(
+                updated_at__year=year_int,  # Фильтруем записи по году и месяцу
+                updated_at__month=month_int,
+                cas_register=CashRegisterChoices.BUYING_UP  # Оставляем результат только одной кассы.
+            ).select_related('author').prefetch_related(  # Джойним CustomUser что бы получить username
+                Prefetch('author', queryset=CustomUser.objects.only('username'))
+            ).values(  # Выводим следующие столбцы.
+                # 'updated_at',
+                # 'author__username'
+                year=ExtractYear('updated_at'),
+                month=ExtractMonth('updated_at'),
+                day=ExtractDay('updated_at'),
+                author__username=F('author__username')
+            ).order_by('author__username')  # Упорядочим по автору.
+
+            print(f'Фильтрованные записи: {filtered_records}')
+
+            # Для понятного вывода в консоль используем pandas.
+            df = pd.DataFrame(filtered_records)
+            df_sorted = df.sort_values('author__username')
+            print("\nУпорядоченный порядок:")
+            print(df_sorted)
+
+            # Преобразуем QuerySet в список объектов для HTML
+            records_list = list(filtered_records)
+
+            context['records_list'] = records_list
+
+        except ValueError:
+            # Обрабатываем ошибку при неверном формате года или месяца
+            logger.error(f"Invalid year or month format: {year}, {month}")
+            raise Http404("Неверный формат года или месяца")
+
+        return context
 
 
 class KorolevaCashReportView(TemplateView):

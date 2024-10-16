@@ -16,25 +16,49 @@
         ul {
             list-style-type: none;
             padding: 0;
+            margin-bottom: 20px;
         }
         li {
             margin-bottom: 10px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-family: Arial, sans-serif;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
         }
     </style>
 </head>
 <body>
 <h1>Краткий отчет</h1>
 
-{% if visits %}
-<ul>
-    {% for count_visits, username in visits %}
-    <li><strong>{{ username }} отработал</strong> - {{ count_visits }} рабочих дня(ей)</li>
+{% if records_list %}
+<table>
+    <thead>
+    <tr>
+        <th>Сотрудник</th>
+        <th>Количество отработанных дней</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for record in records_list %}
+    <tr>
+        <td>{{ record.author__username }}</td>
+        <td>{{ record.count_author__username }}</td>
+    </tr>
     {% endfor %}
-</ul>
+    </tbody>
+</table>
 {% else %}
 <p>За выбранный период нет отчетов.</p>
 {% endif %}
 
 </body>
 </html>
-

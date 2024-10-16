@@ -24,6 +24,7 @@ import numpy as np
 from django.db.models import Prefetch
 from django.db.models import F
 from django.db.models.functions import ExtractYear, ExtractMonth, ExtractDay
+from django.db.models import Count
 
 import logging
 
@@ -443,56 +444,45 @@ class CountVisitsBriefView(TemplateView):
         # Вызываем метод родительского класса для получения начального контекста
         context = super().get_context_data(**kwargs)
 
-        logger.info(f"Starting CountVisitsBriefView with context: {context}")
-        print(f'context: {context}')
-
         # Получаем год и месяц из запроса GET
         year = self.request.GET.get('year')
         month = self.request.GET.get('month')
 
         print(f'Получаем Год,месяц 1: {year}.{month}')
 
-        # Проверяем, были ли указаны год и месяц
-        if not (year and month):
-            # Если не указаны, возвращаем ошибку 404
-            raise Http404("Не указан год или месяц")
+        try:
+            year_int = int(year)
+            month_int = int(month)
 
-        # Проверяем наличие записей для указанного года и месяца
-        base_query = CashReport.objects.filter(updated_at__year=int(year), updated_at__month=int(month))
-        logger.debug(f"Base query count: {base_query.count()}")
+            filtered_records = CashReport.objects.filter(
+                updated_at__year=year_int,
+                updated_at__month=month_int,
+                cas_register=CashRegisterChoices.BUYING_UP
+            ).select_related('author').prefetch_related(
+                Prefetch('author', queryset=CustomUser.objects.only('username'))
+            ).values(
+                'author__username'
+            ).annotate(
+                count_author__username=Count('author')
+            ).order_by('count_author__username')
 
-        # Агрегируем данные о финансовых отчетах
-        reports = CashReport.objects.annotate(
-            report_date=TruncMonth('updated_at')
-        ).filter(
-            report_date__year=int(year),
-            report_date__month=int(month)
-        )
-        logger.debug(f"Reports count: {reports.count()}")
-        print(f'reports 1: {reports}')
+            print(f'Фильтрованные записи: {filtered_records}')
 
-        # Подсчитываем количество посещений для каждого автора
-        visits = reports.values('author').annotate(
-            count_visits=Count('updated_at', distinct=True)
-        ).order_by('count_visits')
+            # Для понятного вывода в консоль используем pandas.
+            df = pd.DataFrame(filtered_records)
+            df_sorted = df.sort_values('author__username')
+            print("\nУпорядоченный порядок:")
+            print(df_sorted)
 
-        logger.debug(f"Visits data: {visits}")
-        print(f'visits: {visits}')
+            # Преобразуем QuerySet в список объектов для HTML.
+            records_list = list(filtered_records)
 
-        # Получаем ID пользователей
-        user_ids = visits.values_list('author', flat=True)
+            context['records_list'] = records_list
 
-        # Получаем соответствующие username
-        usernames = CustomUser.objects.filter(id__in=user_ids).values_list('username', flat=True)
-
-        # Создаем словарь username по ID
-        username_dict = dict(zip(user_ids, usernames))
-
-        # Добавляем полученные данные в контекст
-        context['visits'] = list(username_dict.items())
-        context['count_visits'] = visits.values_list('count_visits', flat=True)
-
-        logger.info("Finished preparing context data")
+        except ValueError:
+            # Обрабатываем ошибку при неверном формате года или месяца.
+            logger.error(f"Invalid year or month format: {year}, {month}")
+            raise Http404("Неверный формат года или месяца")
 
         return context
 
@@ -509,10 +499,11 @@ class CountVisitsFullView(TemplateView):
         context = super().get_context_data(**kwargs)
 
         # Получаем год и месяц из запроса GET
+        # Не понятно почему, но здесь приходится менять местами год с месяцем.
         year = self.request.GET.get('month')
         month = self.request.GET.get('year')
 
-        print(f'Получаем Год,месяц 1: {year}.{month}')
+        print(f'Получаем Год,месяц 2: {year}.{month}')
 
         try:
             year_int = int(year)
@@ -541,13 +532,13 @@ class CountVisitsFullView(TemplateView):
             print("\nУпорядоченный порядок:")
             print(df_sorted)
 
-            # Преобразуем QuerySet в список объектов для HTML
+            # Преобразуем QuerySet в список объектов для HTML.
             records_list = list(filtered_records)
 
             context['records_list'] = records_list
 
         except ValueError:
-            # Обрабатываем ошибку при неверном формате года или месяца
+            # Обрабатываем ошибку при неверном формате года или месяца.
             logger.error(f"Invalid year or month format: {year}, {month}")
             raise Http404("Неверный формат года или месяца")
 

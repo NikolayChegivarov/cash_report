@@ -400,17 +400,24 @@ class ReportSubmittedView(FormView):
 
 
 class KorolevaView(TemplateView):
+    """Страница выбора отчета для руководителя."""
     template_name = 'koroleva.html'
 
 
 class CountVisitsView(TemplateView):
+    """Фильтрация по дате, выбор версии отчета."""
     template_name = 'count_visits.html'
 
     def get(self, request, *args, **kwargs):
+        """Создает экземпляр формы YearMonthForm и передает его в шаблон."""
         form = YearMonthForm()
         return self.render_to_response({'form': form})
 
     def post(self, request, *args, **kwargs):
+        """
+        Отправляет введенные данные, перенаправляет
+        пользователя на выбранную версию отчета.
+        """
         print('Отправляем данные методом post:')
         form = YearMonthForm(request.POST)
 
@@ -434,12 +441,13 @@ class CountVisitsView(TemplateView):
 
 
 class CountVisitsBriefView(TemplateView):
+    """Выводит пользователю краткий отчет"""
+
     template_name = 'count_visits_brief.html'
 
     def get_context_data(self, **kwargs):
         """
-        Краткий отчет. Показывает за указанный месяц, сколько
-        каждый пользователь сделал отчетов. Пользователь - количество.
+        Отчет показывает сколько дней отработал сотрудник
         """
         # Вызываем метод родительского класса для получения начального контекста
         context = super().get_context_data(**kwargs)
@@ -488,12 +496,13 @@ class CountVisitsBriefView(TemplateView):
 
 
 class CountVisitsFullView(TemplateView):
+    """Выводит пользователю полный отчет"""
+
     template_name = 'count_visits_full.html'
 
     def get_context_data(self, **kwargs):
         """
-        Полный отчет. Показывает за указанный месяц, сколько
-        каждый пользователь сделал отчетов. Пользователь - количество.
+        Отчет показывает в какие дни работал сотрудник в указанный период.
         """
         # Вызываем метод родительского класса для получения начального контекста
         context = super().get_context_data(**kwargs)

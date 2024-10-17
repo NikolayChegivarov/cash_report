@@ -395,8 +395,16 @@ class ReportSubmittedView(FormView):
                 return redirect(reverse_lazy('address_selection'))
             elif submit_button == 'Новый день':
                 return redirect(reverse_lazy('cash_report_form'))
+            elif submit_button == 'Корректировать':
+                return redirect(reverse_lazy('сorrected'))
 
         return self.render_to_response(self.get_context_data(form=form))
+
+
+class CorrectedView(FormView):
+    """Страница корректировки отчета."""
+    template_name = 'сorrected.html'
+    form_class = MultiCashReportForm
 
 
 class KorolevaView(TemplateView):

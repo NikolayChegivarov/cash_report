@@ -109,7 +109,7 @@ def current_balance(address_id):
     # Создаю словарь с балансами касс.
     balance = {'buying_up': None, 'pawnshop': None, 'technique': None}
 
-    # BUYING_UP
+    # BUYING_UP ORM зарос
     buying_up_reports_BUYING_UP = CashReport.objects.filter(
         cas_register=CashRegisterChoices.BUYING_UP,
         id_address_id=address_id
@@ -126,7 +126,7 @@ def current_balance(address_id):
         balance['buying_up'] = 0
         print(f"Отчетов по скупке для адреса {address_id} не найдено")
 
-    # PAWNSHOP
+    # PAWNSHOP ORM зарос
     buying_up_reports_PAWNSHOP = CashReport.objects.filter(
         cas_register=CashRegisterChoices.PAWNSHOP,
         id_address_id=address_id
@@ -141,7 +141,7 @@ def current_balance(address_id):
         balance['pawnshop'] = 0
         print(f"Отчетов по скупке для адреса {address_id} не найдено")
 
-    # TECHNIQUE
+    # TECHNIQUE ORM зарос
     buying_up_reports_TECHNIQUE = CashReport.objects.filter(
         cas_register=CashRegisterChoices.TECHNIQUE,
         id_address_id=address_id
@@ -168,7 +168,6 @@ class CashReportFormView(LoginRequiredMixin, FormView):
     def get_initial(self):
         """
         Функция для получения начальных значений данных формы.
-
         Возвращает словарь с начальными значениями полей формы,
         включая выбранный адрес и автора (текущего пользователя).
         """
@@ -177,18 +176,6 @@ class CashReportFormView(LoginRequiredMixin, FormView):
         if selected_address_id:
             initial['id_address'] = Address.objects.get(id=selected_address_id)
         initial['author'] = self.request.user
-
-        # # Распечатка содержимого request
-        # print("-" * 50)
-        # print("Содержимое request:")
-        # for attr_name in dir(self.request):
-        #     if not attr_name.startswith('__'):
-        #         try:
-        #             value = getattr(self.request, attr_name)
-        #             print(f"{attr_name}: {value}")
-        #         except Exception as e:
-        #             print(f"Ошибка при доступе к {attr_name}: {str(e)}")
-        # print("-" * 50)
 
         return initial
 
@@ -214,7 +201,7 @@ class CashReportFormView(LoginRequiredMixin, FormView):
         # Получает экземпляр формы из родительского класса
         form = super().get_form(form_class)
 
-        # Ограничивает queryset поля id_address только одним выбранным адресом
+        # Адрес для формы из сессии пользователя.
         selected_address_id = self.request.session.get('selected_address_id')
         if selected_address_id:
             form.fields['id_address'].queryset = Address.objects.filter(id=selected_address_id)
@@ -268,6 +255,11 @@ class ReportSubmittedView(FormView):
     form_class = MultiCashReportForm
 
     def get_initial(self):
+        """
+        Возвращает начальные данные для формы, включая:
+        - id_address: выбранный адрес из сессии пользователя, если он существует.
+        - author: текущий пользователь, который отправил форму.
+        """
         initial = {}
         selected_address_id = self.request.session.get('selected_address_id')
         if selected_address_id:
@@ -282,7 +274,7 @@ class ReportSubmittedView(FormView):
         """
         form = super().get_form(form_class)
 
-        # Ограничивает queryset поля id_address только одним выбранным адресом
+        # Адрес для формы из сессии пользователя.
         selected_address_id = self.request.session.get('selected_address_id')
         if selected_address_id:
             form.fields['id_address'].queryset = Address.objects.filter(id=selected_address_id)
@@ -406,10 +398,143 @@ class CorrectedView(FormView):
     template_name = 'сorrected.html'
     form_class = MultiCashReportForm
 
+    def get_initial(self):
+        """
+        Функция для получения начальных значений данных формы.
+        Возвращает словарь с начальными значениями полей формы,
+        включая выбранный адрес и автора (текущего пользователя).
+        """
+        initial = {}
+        selected_address_id = self.request.session.get('selected_address_id')
+        if selected_address_id:
+            initial['id_address'] = Address.objects.get(id=selected_address_id)
+        initial['author'] = self.request.user
+
+        return initial
+
+    def post(self, request, *args, **kwargs):
+        """
+        Этот метод обрабатывает отправку формы на сервер.
+        Он проверяет валидность формы, если форма валидна, то сохраняет данные и возвращает успешный ответ.
+        Если форма невалидна, то выводит ошибки и возвращает ответ о некорректности данных.
+        """
+        form = self.get_form()
+        if form.is_valid():
+            result = form.save()
+            print(f"Результат сохранения: {result}")
+            return self.form_valid(form)
+        else:
+            print("Форма невалидна:", form.errors)
+            return self.form_invalid(form)
+
+    def get_form(self, form_class=None):
+        """
+        Конфигурирует форму, отключая поля, которые не должны быть изменены.
+        """
+        # Получает экземпляр формы из родительского класса
+        form = super().get_form(form_class)
+
+        # Адрес для формы из сессии пользователя.
+        selected_address_id = self.request.session.get('selected_address_id')
+        if selected_address_id:
+            form.fields['id_address'].queryset = Address.objects.filter(id=selected_address_id)
+        else:
+            form.fields['id_address'].queryset = Address.objects.all()[:1]
+
+        address_id = selected_address_id
+
+        # BUYING_UP ORM зарос
+        buying_up_reports_BUYING_UP = CashReport.objects.filter(
+            cas_register=CashRegisterChoices.BUYING_UP,
+            id_address_id=address_id
+        ).annotate(
+            last_updated=Max('updated_at')
+        ).order_by('-last_updated').first()
+
+        # PAWNSHOP ORM зарос
+        buying_up_reports_PAWNSHOP = CashReport.objects.filter(
+            cas_register=CashRegisterChoices.PAWNSHOP,
+            id_address_id=address_id
+        ).annotate(
+            last_updated=Max('updated_at')
+        ).order_by('-last_updated').first()
+
+        # TECHNIQUE ORM зарос
+        buying_up_reports_TECHNIQUE = CashReport.objects.filter(
+            cas_register=CashRegisterChoices.TECHNIQUE,
+            id_address_id=address_id
+        ).annotate(
+            last_updated=Max('updated_at')
+        ).order_by('-last_updated').first()
+
+        # Устанавливаю значения для полей.
+        form.initial['data'] = now().strftime('%Y-%m-%d')
+
+        form.initial['cas_register_buying_up'] = CashRegisterChoices.BUYING_UP
+        form.initial['cash_balance_beginning_buying_up'] = buying_up_reports_BUYING_UP.cash_balance_beginning
+        form.initial['introduced_buying_up'] = buying_up_reports_BUYING_UP.introduced
+        form.initial['interest_return_buying_up'] = buying_up_reports_BUYING_UP.interest_return
+        form.initial['loans_issued_buying_up'] = buying_up_reports_BUYING_UP.loans_issued
+        form.initial['used_farming_buying_up'] = buying_up_reports_BUYING_UP.used_farming
+        form.initial['boss_took_it_buying_up'] = buying_up_reports_BUYING_UP.boss_took_it
+        form.initial['cash_register_end_buying_up'] = buying_up_reports_BUYING_UP.cash_register_end
+
+        form.initial['cas_register_pawnshop'] = CashRegisterChoices.PAWNSHOP
+        form.initial['cash_balance_beginning_pawnshop'] = buying_up_reports_PAWNSHOP.cash_balance_beginning
+        form.initial['introduced_pawnshop'] = buying_up_reports_PAWNSHOP.introduced
+        form.initial['interest_return_pawnshop'] = buying_up_reports_PAWNSHOP.interest_return
+        form.initial['loans_issued_pawnshop'] = buying_up_reports_PAWNSHOP.loans_issued
+        form.initial['used_farming_pawnshop'] = buying_up_reports_PAWNSHOP.used_farming
+        form.initial['boss_took_it_pawnshop'] = buying_up_reports_PAWNSHOP.boss_took_it
+        form.initial['cash_register_end_pawnshop'] = buying_up_reports_PAWNSHOP.cash_register_end
+
+        form.initial['cas_register_technique'] = CashRegisterChoices.TECHNIQUE
+        form.initial['cash_balance_beginning_technique'] = buying_up_reports_TECHNIQUE.cash_balance_beginning
+        form.initial['introduced_technique'] = buying_up_reports_TECHNIQUE.introduced
+        form.initial['interest_return_technique'] = buying_up_reports_TECHNIQUE.interest_return
+        form.initial['loans_issued_technique'] = buying_up_reports_TECHNIQUE.loans_issued
+        form.initial['used_farming_technique'] = buying_up_reports_TECHNIQUE.used_farming
+        form.initial['boss_took_it_technique'] = buying_up_reports_TECHNIQUE.boss_took_it
+        form.initial['cash_register_end_technique'] = buying_up_reports_TECHNIQUE.cash_register_end
+
+        # Отключаю поля для редактирования
+        form.fields['id_address'].disabled = True
+        form.fields['author'].disabled = True
+        form.fields['cas_register_buying_up'].disabled = True
+        form.fields['cash_balance_beginning_buying_up'].disabled = True
+        form.fields['cas_register_pawnshop'].disabled = True
+        form.fields['cash_balance_beginning_pawnshop'].disabled = True
+        form.fields['cas_register_technique'].disabled = True
+        form.fields['cash_balance_beginning_technique'].disabled = True
+        form.fields['cash_register_end_buying_up'].disabled = True
+        form.fields['cash_register_end_pawnshop'].disabled = True
+        form.fields['cash_register_end_technique'].disabled = True
+
+        # Запрет на редактирование статуса.
+        if hasattr(form, 'fields') and 'status' in form.fields:
+            form.fields['status'].disabled = True
+
+        print(f"Selected address ID: {selected_address_id}")
+
+        return form
+
+    def get_success_url(self):
+        """Возвращает URL успешного завершения для текущего представления."""
+        return reverse_lazy('report_submitted')
+
 
 class KorolevaView(TemplateView):
     """Страница выбора отчета для руководителя."""
     template_name = 'koroleva.html'
+
+    def get_initial(self):
+        initial = {}
+        selected_address_id = self.request.session.get('selected_address_id')
+        if selected_address_id:
+            initial['id_address'] = Address.objects.get(id=selected_address_id)
+        initial['author'] = self.request.user
+
+        return initial
 
 
 class CountVisitsView(TemplateView):

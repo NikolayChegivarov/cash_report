@@ -127,6 +127,7 @@ class MultiCashReportForm(forms.Form):
     def save(self):
         shift_date = datetime.now()
         print(f"Начало сохранения данных. Дата: {shift_date}")
+        print(f"------------------")
         try:
             # Buying Up report
             buying_up_report = CashReport(

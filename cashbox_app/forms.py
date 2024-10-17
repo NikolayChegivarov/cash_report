@@ -124,74 +124,221 @@ class MultiCashReportForm(forms.Form):
 
     status = forms.ChoiceField(choices=CashReportStatusChoices.choices, initial=CashReportStatusChoices.OPEN)
 
+    # def save(self):
+    #     shift_date = datetime.now()
+    #     print(f"Начало сохранения данных. Дата: {shift_date}")
+    #     print(f"------------------")
+    #     try:
+    #         # Проверяем, существует ли уже запись с такой датой и автором
+    #         existing_report = CashReport.objects.filter(
+    #             updated_at__date=shift_date.date(),
+    #             author=self.cleaned_data['author']
+    #         ).first()
+    #
+    #         if existing_report:
+    #             # Если запись найдена, обновляем её
+    #             existing_report.cash_balance_beginning = self.cleaned_data['cash_balance_beginning_buying_up']
+    #             existing_report.introduced = self.cleaned_data['introduced_buying_up']
+    #             existing_report.interest_return = self.cleaned_data['interest_return_buying_up']
+    #             existing_report.loans_issued = self.cleaned_data['loans_issued_buying_up']
+    #             existing_report.used_farming = self.cleaned_data['used_farming_buying_up']
+    #             existing_report.boss_took_it = self.cleaned_data['boss_took_it_buying_up']
+    #             existing_report.cash_register_end = self.cleaned_data['cash_register_end_buying_up']
+    #             existing_report.status = self.cleaned_data['status']
+    #             existing_report.save()
+    #             print(f"Запись обновлена: {existing_report}")
+    #
+    #         else:
+    #             # Buying Up report
+    #             buying_up_report = CashReport(
+    #                 shift_date=shift_date,
+    #                 id_address=self.cleaned_data['id_address'],
+    #                 author=self.cleaned_data['author'],
+    #                 cas_register=self.cleaned_data['cas_register_buying_up'],
+    #                 cash_balance_beginning=self.cleaned_data['cash_balance_beginning_buying_up'],
+    #                 introduced=self.cleaned_data['introduced_buying_up'],
+    #                 interest_return=self.cleaned_data['interest_return_buying_up'],
+    #                 loans_issued=self.cleaned_data['loans_issued_buying_up'],
+    #                 used_farming=self.cleaned_data['used_farming_buying_up'],
+    #                 boss_took_it=self.cleaned_data['boss_took_it_buying_up'],
+    #                 cash_register_end=self.cleaned_data['cash_register_end_buying_up'],
+    #                 status=self.cleaned_data['status']
+    #             )
+    #             print(f"Buying Up report создан: {buying_up_report}")
+    #             buying_up_report.save()
+    #             print(f"Buying Up report сохранен")
+    #
+    #             # Pawnshop report
+    #             pawnshop_report = CashReport(
+    #                 shift_date=shift_date,
+    #                 id_address=self.cleaned_data['id_address'],
+    #                 author=self.cleaned_data['author'],
+    #                 cas_register=self.cleaned_data['cas_register_pawnshop'],
+    #                 cash_balance_beginning=self.cleaned_data['cash_balance_beginning_pawnshop'],
+    #                 introduced=self.cleaned_data['introduced_pawnshop'],
+    #                 interest_return=self.cleaned_data['interest_return_pawnshop'],
+    #                 loans_issued=self.cleaned_data['loans_issued_pawnshop'],
+    #                 used_farming=self.cleaned_data['used_farming_pawnshop'],
+    #                 boss_took_it=self.cleaned_data['boss_took_it_pawnshop'],
+    #                 cash_register_end=self.cleaned_data['cash_register_end_pawnshop'],
+    #                 status=self.cleaned_data['status']
+    #             )
+    #             print(f"Pawnshop report создан: {pawnshop_report}")
+    #             pawnshop_report.save()
+    #             print(f"Pawnshop report сохранен")
+    #
+    #             # Technique report
+    #             technique_report = CashReport(
+    #                 shift_date=shift_date,
+    #                 id_address=self.cleaned_data['id_address'],
+    #                 author=self.cleaned_data['author'],
+    #                 cas_register=self.cleaned_data['cas_register_technique'],
+    #                 cash_balance_beginning=self.cleaned_data['cash_balance_beginning_technique'],
+    #                 introduced=self.cleaned_data['introduced_technique'],
+    #                 interest_return=self.cleaned_data['interest_return_technique'],
+    #                 loans_issued=self.cleaned_data['loans_issued_technique'],
+    #                 used_farming=self.cleaned_data['used_farming_technique'],
+    #                 boss_took_it=self.cleaned_data['boss_took_it_technique'],
+    #                 cash_register_end=self.cleaned_data['cash_register_end_technique'],
+    #                 status=self.cleaned_data['status']
+    #             )
+    #             print(f"Technique report создан: {technique_report}")
+    #             technique_report.save()
+    #             print(f"Technique report сохранен")
+    #
+    #             print("Все данные успешно сохранены")
+    #             return True
+    #
+    #     except Exception as e:
+    #         print(f"Произошла ошибка при сохранении данных: {str(e)}")
+    #         return False
+    #
+    # def clean(self):
+    #     cleaned_data = super().clean()
+    #
+    #     # Расчет для покупок
+    #     calculate_cash_register_end(self, cleaned_data, 'buying_up')
+    #     # Расчет для ломбарда
+    #     calculate_cash_register_end(self, cleaned_data, 'pawnshop')
+    #     # Расчет для техники
+    #     calculate_cash_register_end(self, cleaned_data, 'technique')
+    #     return cleaned_data
+
     def save(self):
         shift_date = datetime.now()
         print(f"Начало сохранения данных. Дата: {shift_date}")
         print(f"------------------")
+
         try:
-            # Buying Up report
-            buying_up_report = CashReport(
-                shift_date=shift_date,
-                id_address=self.cleaned_data['id_address'],
-                author=self.cleaned_data['author'],
-                cas_register=self.cleaned_data['cas_register_buying_up'],
-                cash_balance_beginning=self.cleaned_data['cash_balance_beginning_buying_up'],
-                introduced=self.cleaned_data['introduced_buying_up'],
-                interest_return=self.cleaned_data['interest_return_buying_up'],
-                loans_issued=self.cleaned_data['loans_issued_buying_up'],
-                used_farming=self.cleaned_data['used_farming_buying_up'],
-                boss_took_it=self.cleaned_data['boss_took_it_buying_up'],
-                cash_register_end=self.cleaned_data['cash_register_end_buying_up'],
-                status=self.cleaned_data['status']
+            # Проверяем, существуют ли отчеты с такой датой и автором
+            existing_reports = CashReport.objects.filter(
+                updated_at__date=shift_date.date(),
+                author=self.cleaned_data['author']
             )
-            print(f"Buying Up report создан: {buying_up_report}")
-            buying_up_report.save()
-            print(f"Buying Up report сохранен")
+
+            # Buying Up report
+            buying_up_report = existing_reports.filter(cas_register=self.cleaned_data['cas_register_buying_up']).first()
+            if buying_up_report:
+                # Обновляем существующий отчет Buying Up
+                buying_up_report.cash_balance_beginning = self.cleaned_data['cash_balance_beginning_buying_up']
+                buying_up_report.introduced = self.cleaned_data['introduced_buying_up']
+                buying_up_report.interest_return = self.cleaned_data['interest_return_buying_up']
+                buying_up_report.loans_issued = self.cleaned_data['loans_issued_buying_up']
+                buying_up_report.used_farming = self.cleaned_data['used_farming_buying_up']
+                buying_up_report.boss_took_it = self.cleaned_data['boss_took_it_buying_up']
+                buying_up_report.cash_register_end = self.cleaned_data['cash_register_end_buying_up']
+                buying_up_report.status = self.cleaned_data['status']
+                buying_up_report.save()
+                print(f"Buying Up report обновлен: {buying_up_report}")
+            else:
+                # Создаем новую запись Buying Up
+                buying_up_report = CashReport(
+                    shift_date=shift_date,
+                    id_address=self.cleaned_data['id_address'],
+                    author=self.cleaned_data['author'],
+                    cas_register=self.cleaned_data['cas_register_buying_up'],
+                    cash_balance_beginning=self.cleaned_data['cash_balance_beginning_buying_up'],
+                    introduced=self.cleaned_data['introduced_buying_up'],
+                    interest_return=self.cleaned_data['interest_return_buying_up'],
+                    loans_issued=self.cleaned_data['loans_issued_buying_up'],
+                    used_farming=self.cleaned_data['used_farming_buying_up'],
+                    boss_took_it=self.cleaned_data['boss_took_it_buying_up'],
+                    cash_register_end=self.cleaned_data['cash_register_end_buying_up'],
+                    status=self.cleaned_data['status']
+                )
+                buying_up_report.save()
+                print(f"Buying Up report создан: {buying_up_report}")
 
             # Pawnshop report
-            pawnshop_report = CashReport(
-                shift_date=shift_date,
-                id_address=self.cleaned_data['id_address'],
-                author=self.cleaned_data['author'],
-                cas_register=self.cleaned_data['cas_register_pawnshop'],
-                cash_balance_beginning=self.cleaned_data['cash_balance_beginning_pawnshop'],
-                introduced=self.cleaned_data['introduced_pawnshop'],
-                interest_return=self.cleaned_data['interest_return_pawnshop'],
-                loans_issued=self.cleaned_data['loans_issued_pawnshop'],
-                used_farming=self.cleaned_data['used_farming_pawnshop'],
-                boss_took_it=self.cleaned_data['boss_took_it_pawnshop'],
-                cash_register_end=self.cleaned_data['cash_register_end_pawnshop'],
-                status=self.cleaned_data['status']
-            )
-            print(f"Pawnshop report создан: {pawnshop_report}")
-            pawnshop_report.save()
-            print(f"Pawnshop report сохранен")
+            pawnshop_report = existing_reports.filter(cas_register=self.cleaned_data['cas_register_pawnshop']).first()
+            if pawnshop_report:
+                # Обновляем существующий отчет Pawnshop
+                pawnshop_report.cash_balance_beginning = self.cleaned_data['cash_balance_beginning_pawnshop']
+                pawnshop_report.introduced = self.cleaned_data['introduced_pawnshop']
+                pawnshop_report.interest_return = self.cleaned_data['interest_return_pawnshop']
+                pawnshop_report.loans_issued = self.cleaned_data['loans_issued_pawnshop']
+                pawnshop_report.used_farming = self.cleaned_data['used_farming_pawnshop']
+                pawnshop_report.boss_took_it = self.cleaned_data['boss_took_it_pawnshop']
+                pawnshop_report.cash_register_end = self.cleaned_data['cash_register_end_pawnshop']
+                pawnshop_report.status = self.cleaned_data['status']
+                pawnshop_report.save()
+                print(f"Pawnshop report обновлен: {pawnshop_report}")
+            else:
+                # Создаем новую запись Pawnshop
+                pawnshop_report = CashReport(
+                    shift_date=shift_date,
+                    id_address=self.cleaned_data['id_address'],
+                    author=self.cleaned_data['author'],
+                    cas_register=self.cleaned_data['cas_register_pawnshop'],
+                    cash_balance_beginning=self.cleaned_data['cash_balance_beginning_pawnshop'],
+                    introduced=self.cleaned_data['introduced_pawnshop'],
+                    interest_return=self.cleaned_data['interest_return_pawnshop'],
+                    loans_issued=self.cleaned_data['loans_issued_pawnshop'],
+                    used_farming=self.cleaned_data['used_farming_pawnshop'],
+                    boss_took_it=self.cleaned_data['boss_took_it_pawnshop'],
+                    cash_register_end=self.cleaned_data['cash_register_end_pawnshop'],
+                    status=self.cleaned_data['status']
+                )
+                pawnshop_report.save()
+                print(f"Pawnshop report создан: {pawnshop_report}")
 
             # Technique report
-            technique_report = CashReport(
-                shift_date=shift_date,
-                id_address=self.cleaned_data['id_address'],
-                author=self.cleaned_data['author'],
-                cas_register=self.cleaned_data['cas_register_technique'],
-                cash_balance_beginning=self.cleaned_data['cash_balance_beginning_technique'],
-                introduced=self.cleaned_data['introduced_technique'],
-                interest_return=self.cleaned_data['interest_return_technique'],
-                loans_issued=self.cleaned_data['loans_issued_technique'],
-                used_farming=self.cleaned_data['used_farming_technique'],
-                boss_took_it=self.cleaned_data['boss_took_it_technique'],
-                cash_register_end=self.cleaned_data['cash_register_end_technique'],
-                status=self.cleaned_data['status']
-            )
-            print(f"Technique report создан: {technique_report}")
-            technique_report.save()
-            print(f"Technique report сохранен")
+            technique_report = existing_reports.filter(cas_register=self.cleaned_data['cas_register_technique']).first()
+            if technique_report:
+                # Обновляем существующий отчет Technique
+                technique_report.cash_balance_beginning = self.cleaned_data['cash_balance_beginning_technique']
+                technique_report.introduced = self.cleaned_data['introduced_technique']
+                technique_report.interest_return = self.cleaned_data['interest_return_technique']
+                technique_report.loans_issued = self.cleaned_data['loans_issued_technique']
+                technique_report.used_farming = self.cleaned_data['used_farming_technique']
+                technique_report.boss_took_it = self.cleaned_data['boss_took_it_technique']
+                technique_report.cash_register_end = self.cleaned_data['cash_register_end_technique']
+                technique_report.status = self.cleaned_data['status']
+                technique_report.save()
+                print(f"Technique report обновлен: {technique_report}")
+            else:
+                # Создаем новую запись Technique
+                technique_report = CashReport(
+                    shift_date=shift_date,
+                    id_address=self.cleaned_data['id_address'],
+                    author=self.cleaned_data['author'],
+                    cas_register=self.cleaned_data['cas_register_technique'],
+                    cash_balance_beginning=self.cleaned_data['cash_balance_beginning_technique'],
+                    introduced=self.cleaned_data['introduced_technique'],
+                    interest_return=self.cleaned_data['interest_return_technique'],
+                    loans_issued=self.cleaned_data['loans_issued_technique'],
+                    used_farming=self.cleaned_data['used_farming_technique'],
+                    boss_took_it=self.cleaned_data['boss_took_it_technique'],
+                    cash_register_end=self.cleaned_data['cash_register_end_technique'],
+                    status=self.cleaned_data['status']
+                )
+                technique_report.save()
+                print(f"Technique report создан: {technique_report}")
 
-            print("Все данные успешно сохранены")
-            return True
+            print("Все отчеты успешно сохранены или обновлены.")
 
         except Exception as e:
-            print(f"Произошла ошибка при сохранении данных: {str(e)}")
-            return False
+            print(f"Ошибка при сохранении данных: {e}")
 
     def clean(self):
         cleaned_data = super().clean()

@@ -11,8 +11,8 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 from django import forms
 from django.http import HttpResponse, Http404
-from cashbox_app.forms import CustomAuthenticationForm, AddressSelectionForm
-from cashbox_app.models import Address, CashReport, CashRegisterChoices
+from cashbox_app.forms import CustomAuthenticationForm, AddressSelectionForm, SavedForm
+from cashbox_app.models import Address, CashReport, CashRegisterChoices, CashReportStatusChoices
 from .forms import MultiCashReportForm, YearMonthForm
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
@@ -25,6 +25,7 @@ from django.db.models import Prefetch
 from django.db.models import F
 from django.db.models.functions import ExtractYear, ExtractMonth, ExtractDay
 from django.db.models import Count
+from django.utils import timezone
 
 import logging
 
@@ -381,14 +382,130 @@ class ReportSubmittedView(FormView):
         form = self.get_form()
         if form.is_valid():
             submit_button = request.POST.get('submit_button')
+            if submit_button == 'Корректировать':
+                return redirect(reverse_lazy('corrected'))
+            elif submit_button == 'Сохранить':
+                # Получаем текущий отчет из базы данных
+                cash_report = CashReport.objects.filter(
+                    id_address=self.request.session.get('selected_address_id'),
+                    author=self.request.user,
+                    status=CashReportStatusChoices.OPEN
+                )
+
+                print(f'cash_report111111111: {cash_report}')
+
+                # Если отчет найден и его статус изменить на CLOSED
+                if cash_report:
+                    CashReport.objects.filter(id__in=cash_report.values_list('id')).update(
+                        status=CashReportStatusChoices.CLOSED)
+
+                    # Обновляем сессию пользователя
+                    self.request.session['cash_report_status'] = CashReportStatusChoices.CLOSED
+
+                    return redirect(reverse_lazy('saved'))
+
+        return self.render_to_response(self.get_context_data(form=form))
+
+
+class SavedView(FormView):
+    """Страница сохранения."""
+    template_name = 'report_submitted_saved.html'
+    form_class = SavedForm
+
+    def get_initial(self):
+        """
+        Функция для получения начальных значений данных формы.
+        Возвращает словарь с начальными значениями полей формы,
+        включая выбранный адрес и автора (текущего пользователя).
+        """
+        initial = {}
+        selected_address_id = self.request.session.get('selected_address_id')
+        if selected_address_id:
+            initial['id_address'] = Address.objects.get(id=selected_address_id)
+        initial['author'] = self.request.user
+
+        return initial
+
+    def get_form(self, form_class=None):
+        """
+        Конфигурирует форму, отключая поля, которые не должны быть изменены.
+        """
+        # Получает экземпляр формы из родительского класса
+        form = super().get_form(form_class)
+
+        # Адрес для формы из сессии пользователя.
+        selected_address_id = self.request.session.get('selected_address_id')
+        if selected_address_id:
+            form.fields['id_address'].queryset = Address.objects.filter(id=selected_address_id)
+        else:
+            form.fields['id_address'].queryset = Address.objects.all()[:1]
+
+        address_id = selected_address_id
+
+        # BUYING_UP ORM зарос
+        buying_up_reports_BUYING_UP = CashReport.objects.filter(
+            cas_register=CashRegisterChoices.BUYING_UP,
+            id_address_id=address_id
+        ).annotate(
+            last_updated=Max('updated_at')
+        ).order_by('-last_updated').first()
+
+        # PAWNSHOP ORM зарос
+        buying_up_reports_PAWNSHOP = CashReport.objects.filter(
+            cas_register=CashRegisterChoices.PAWNSHOP,
+            id_address_id=address_id
+        ).annotate(
+            last_updated=Max('updated_at')
+        ).order_by('-last_updated').first()
+
+        # TECHNIQUE ORM зарос
+        buying_up_reports_TECHNIQUE = CashReport.objects.filter(
+            cas_register=CashRegisterChoices.TECHNIQUE,
+            id_address_id=address_id
+        ).annotate(
+            last_updated=Max('updated_at')
+        ).order_by('-last_updated').first()
+
+        # Устанавливаю значения для полей.
+        form.initial['data'] = now().strftime('%Y-%m-%d')
+
+        form.initial['cas_register_buying_up'] = CashRegisterChoices.BUYING_UP
+        form.initial['cash_register_end_buying_up'] = buying_up_reports_BUYING_UP.cash_register_end
+
+        form.initial['cas_register_pawnshop'] = CashRegisterChoices.PAWNSHOP
+        form.initial['cash_register_end_pawnshop'] = buying_up_reports_PAWNSHOP.cash_register_end
+
+        form.initial['cas_register_technique'] = CashRegisterChoices.TECHNIQUE
+        form.initial['cash_register_end_technique'] = buying_up_reports_TECHNIQUE.cash_register_end
+
+        # Отключаю поля для редактирования
+        form.fields['id_address'].disabled = True
+        form.fields['author'].disabled = True
+        form.fields['cas_register_buying_up'].disabled = True
+        form.fields['cas_register_pawnshop'].disabled = True
+        form.fields['cas_register_technique'].disabled = True
+        form.fields['cash_register_end_buying_up'].disabled = True
+        form.fields['cash_register_end_pawnshop'].disabled = True
+        form.fields['cash_register_end_technique'].disabled = True
+
+        # Запрет на редактирование статуса.
+        if hasattr(form, 'fields') and 'status' in form.fields:
+            form.fields['status'].disabled = True
+
+        print(f"Selected address ID: {selected_address_id}")
+
+        return form
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if form.is_valid():
+            submit_button = request.POST.get('submit_button')
             if submit_button == 'Сменить пользователя':
                 return redirect(reverse_lazy('login'))
             elif submit_button == 'Сменить адрес':
                 return redirect(reverse_lazy('address_selection'))
             elif submit_button == 'Новый день':
                 return redirect(reverse_lazy('cash_report_form'))
-            elif submit_button == 'Корректировать':
-                return redirect(reverse_lazy('сorrected'))
 
         return self.render_to_response(self.get_context_data(form=form))
 

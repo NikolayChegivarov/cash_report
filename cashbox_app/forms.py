@@ -242,7 +242,6 @@ class MultiCashReportForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-
         # Расчет для покупок
         calculate_cash_register_end(self, cleaned_data, 'buying_up')
         # Расчет для ломбарда
@@ -250,6 +249,32 @@ class MultiCashReportForm(forms.Form):
         # Расчет для техники
         calculate_cash_register_end(self, cleaned_data, 'technique')
         return cleaned_data
+
+
+class SavedForm(forms.Form):
+    """Объединяет несколько типов отчетов (покупки, ломбард, техника) в одну форму."""
+
+    author = forms.ModelChoiceField(queryset=CustomUser.objects.all())
+    id_address = forms.ModelChoiceField(queryset=Address.objects.all())
+    data = forms.CharField(widget=forms.Textarea(attrs={'rows': 1}), required=False)
+
+    # Формы для скупки.
+    cas_register_buying_up = forms.ChoiceField(choices=CashRegisterChoices.choices, initial='BUYING_UP')
+    cash_register_end_buying_up = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
+
+    # Формы для ломбарда
+    cas_register_pawnshop = forms.ChoiceField(choices=CashRegisterChoices.choices, initial='PAWNSHOP')
+    cash_register_end_pawnshop = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
+
+    # Формы для техники.
+    cas_register_technique = forms.ChoiceField(choices=CashRegisterChoices.choices, initial='TECHNIQUE')
+    cash_register_end_technique = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
+
+    status = forms.ChoiceField(choices=CashReportStatusChoices.choices, initial=CashReportStatusChoices.CLOSED)
+
+    # def save(self):
+    #     shift_date = datetime.now()
+    #     status = self.cleaned_data['status']
 
 
 class YearMonthForm(forms.Form):

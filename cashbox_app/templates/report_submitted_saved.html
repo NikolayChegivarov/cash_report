@@ -1,0 +1,48 @@
+{% block content %}
+<h2>Данные сохранены</h2>
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <div>
+        <label>Сотрудник смены:</label>
+        {{form.author}}
+    </div>
+    <div>
+        <label>Адрес:</label>
+        {{form.id_address}}
+    </div>
+
+    <div>
+        <label>Дата:</label>
+        {{form.data}}
+    </div>
+
+    <table>
+        <thead>
+        </thead>
+        <tbody>
+
+        <tr>
+            <td>Остаток на конец дня:</td>
+            <td id="cash_register_end_buying_up">{{ form.cash_register_end_buying_up }}</td>
+            <td id="cash_register_end_pawnshop">{{ form.cash_register_end_pawnshop }}</td>
+            <td id="cash_register_end_technique">{{ form.cash_register_end_technique }}</td>
+        </tr>
+
+        </tbody>
+    </table>
+
+    <div>
+        <label>Статус:</label>
+        {{ form.status }}
+    </div>
+
+    <div class="buttons">
+        <button type="submit" name="submit_button" value="Сменить пользователя">Сменить пользователя</button>
+        <button type="submit" name="submit_button" value="Сменить адрес">Сменить адрес</button>
+        <button type="submit" name="submit_button" value="Новый день">Новый день</button>
+    </div>
+
+</form>
+
+{% endblock %}

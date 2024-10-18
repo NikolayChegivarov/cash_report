@@ -1,4 +1,5 @@
 from django.contrib.auth.views import LoginView
+from django.views import View
 from django.views.generic import FormView, TemplateView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -383,16 +384,26 @@ class ReportSubmittedView(FormView):
         if form.is_valid():
             submit_button = request.POST.get('submit_button')
             if submit_button == 'Корректировать':
-                return redirect(reverse_lazy('corrected'))
-            elif submit_button == 'Сохранить':
-                # Получаем текущий отчет из базы данных
+                # Получаем текущий отчет из базы данных по трем кассам.
                 cash_report = CashReport.objects.filter(
                     id_address=self.request.session.get('selected_address_id'),
                     author=self.request.user,
                     status=CashReportStatusChoices.OPEN
                 )
 
-                print(f'cash_report111111111: {cash_report}')
+                # Если отчет найден и его статус изменить на CLOSED
+                if cash_report:
+                    return redirect(reverse_lazy('corrected'))
+                else:
+                    # Если статус закрыто, то выводим на страницу 'closed'.
+                    return redirect(reverse_lazy('closed'))
+            elif submit_button == 'Сохранить':
+                # Получаем текущий отчет из базы данных по трем кассам.
+                cash_report = CashReport.objects.filter(
+                    id_address=self.request.session.get('selected_address_id'),
+                    author=self.request.user,
+                    status=CashReportStatusChoices.OPEN
+                )
 
                 # Если отчет найден и его статус изменить на CLOSED
                 if cash_report:
@@ -403,8 +414,18 @@ class ReportSubmittedView(FormView):
                     self.request.session['cash_report_status'] = CashReportStatusChoices.CLOSED
 
                     return redirect(reverse_lazy('saved'))
+                else:
+                    # Если статус закрыто, то выводим на страницу 'closed'.
+                    return redirect(reverse_lazy('closed'))
 
         return self.render_to_response(self.get_context_data(form=form))
+
+
+class ClosedView(View):
+    template_name = 'closed.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
 
 
 class SavedView(FormView):

@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from cashbox_app.views import CustomLoginView, AddressSelectionView, CashReportFormView, ReportSubmittedView, \
     KorolevaView, CountVisitsView, CountVisitsBriefView, CountVisitsFullView, KorolevaCashReportView, CorrectedView, \
-    SavedView
+    SavedView, ClosedView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,6 +27,7 @@ urlpatterns = [
     path('report-submitted/', ReportSubmittedView.as_view(), name='report_submitted'),
     path('cash-report-form/corrected/', CorrectedView.as_view(), name='corrected'),
     path('report-submitted/saved/', SavedView.as_view(), name='saved'),
+    path('report-submitted/saved/closed/', ClosedView.as_view(), name='closed'),
 
     path('koroleva/', KorolevaView.as_view(), name='koroleva'),
     path('count_visits/', CountVisitsView.as_view(), name='count_visits'),

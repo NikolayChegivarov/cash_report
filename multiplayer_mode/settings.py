@@ -28,6 +28,7 @@ SECRET_KEY = 'django-insecure-fad@(m3(wrnmldah=%w2h&*u*xryf8hm^wnjf%5ir%22w092^j
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
@@ -155,3 +156,10 @@ AUTH_USER_MODEL = 'cashbox_app.CustomUser'
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_DOMAIN = None
+SESSION_COOKIE_SECURE = False  # В продакшене изменить на True
+SESSION_SAVE_EVERY_REQUEST = True
+
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_HTTPONLY = True
+CSRF_USE_SESSIONS = True

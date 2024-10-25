@@ -89,8 +89,8 @@ DATABASES = {
         "PORT": "5432",
         "USER": os.getenv("USER_POSTGRES"),
         "PASSWORD": os.getenv("PASSWORD"),
-        "OPTIONS": {"client_encoding": "UTF8", "options": "-c search_path=lombards"},
-        "SCHEMA": "lombards"
+        # "OPTIONS": {"client_encoding": "UTF8", "options": "-c search_path=lombards"},
+        # "SCHEMA": "lombards",
     }
 }
 

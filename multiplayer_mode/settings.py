@@ -33,7 +33,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["192.168.20.123", "localhost", "127.0.0.1"]
 
 # Application definition
 

@@ -81,29 +81,14 @@ WSGI_APPLICATION = "multiplayer_mode.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.getenv('NAME_BD'),
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#         'USER': 'postgres',
-#         'PASSWORD': os.getenv('PASSWORD'),
-#         'OPTIONS': {
-#             'client_encoding': 'UTF8',
-#             'options': '-c search_path=lombards'
-#         },
-#     }
-# }
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.getenv("NAME_BD"),
         "HOST": "localhost",
         "PORT": "5432",
-        "USER": os.getenv("NAME_BD"),
-        "PASSWORD": os.getenv("USER_POSTGRES"),
+        "USER": os.getenv("USER_POSTGRES"),
+        "PASSWORD": os.getenv("PASSWORD"),
         "OPTIONS": {"client_encoding": "UTF8", "options": "-c search_path=lombards"},
     }
 }

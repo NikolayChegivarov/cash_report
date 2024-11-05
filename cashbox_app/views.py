@@ -807,14 +807,28 @@ class KorolevaView(TemplateView):
 
     template_name = "koroleva.html"
 
-    def get_initial(self):
-        initial = {}
-        selected_address_id = self.request.session.get("selected_address_id")
-        if selected_address_id:
-            initial["id_address"] = Address.objects.get(id=selected_address_id)
-        initial["author"] = self.request.user
 
-        return initial
+class ScheduleView(TemplateView):
+
+    template_name = "schedule.html"
+
+    # @method_decorator(csrf_protect)
+    # def dispatch(self, request, *args, **kwargs):
+    #     """
+    #     Метод dispatch является отправной точкой для всех запросов в представлении класса.
+    #     Применяя декоратор к этому методу, мы обеспечиваем, что проверка CSRF будет
+    #     выполняться для всех типов запросов (GET, POST и т.д.).
+    #     """
+    #     return super().dispatch(request, *args, **kwargs)
+    #
+    # def get(self, request, *args, **kwargs):
+    #     """
+    #     Создает экземпляр формы YearMonthForm и передает его в шаблон.
+    #     """
+    #     # form = YearMonthForm()
+    #     # return self.render_to_response({"form": form})
+    #     all_records = Address.objects.all()
+    #     pass
 
 
 class CountVisitsView(TemplateView):

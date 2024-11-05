@@ -13,26 +13,42 @@ https://docs.djangoproject.com/en/5.0/topics/http/urls/.
 Включение другого URLconf
 1. Импортируйте функцию include(): из django.urls import include, путь
 2. Добавьте URL-адрес в urlpatterns: path('blog/', include('blog.urls'))"""
+
 from django.contrib import admin
 from django.urls import path
-from cashbox_app.views import CustomLoginView, AddressSelectionView, CashReportFormView, ReportSubmittedView, \
-    KorolevaView, CountVisitsView, CountVisitsBriefView, CountVisitsFullView, KorolevaCashReportView, CorrectedView, \
-    SavedView, ClosedView
+from cashbox_app.views import (
+    CustomLoginView,
+    AddressSelectionView,
+    CashReportFormView,
+    ReportSubmittedView,
+    KorolevaView,
+    CountVisitsView,
+    CountVisitsBriefView,
+    CountVisitsFullView,
+    KorolevaCashReportView,
+    CorrectedView,
+    SavedView,
+    ClosedView,
+    ScheduleView,
+)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('login/', CustomLoginView.as_view(), name='login'),
-    path('address-selection/', AddressSelectionView.as_view(), name='address_selection'),
-    path('cash-report-form/', CashReportFormView.as_view(), name='cash_report_form'),
-    path('report-submitted/', ReportSubmittedView.as_view(), name='report_submitted'),
-    path('cash-report-form/corrected/', CorrectedView.as_view(), name='corrected'),
-    path('report-submitted/saved/', SavedView.as_view(), name='saved'),
-    path('report-submitted/saved/closed/', ClosedView.as_view(), name='closed'),
-
-    path('koroleva/', KorolevaView.as_view(), name='koroleva'),
-    path('count_visits/', CountVisitsView.as_view(), name='count_visits'),
-    path('count_visits/brief', CountVisitsBriefView.as_view(), name='count_visits_brief'),
-    path('count_visits/full', CountVisitsFullView.as_view(), name='count_visits_full'),
-
-    path('cash_report/', KorolevaCashReportView.as_view(), name='coroleva_cash_report'),
+    path("admin/", admin.site.urls),
+    path("login/", CustomLoginView.as_view(), name="login"),
+    path(
+        "address-selection/", AddressSelectionView.as_view(), name="address_selection"
+    ),
+    path("cash-report-form/", CashReportFormView.as_view(), name="cash_report_form"),
+    path("report-submitted/", ReportSubmittedView.as_view(), name="report_submitted"),
+    path("cash-report-form/corrected/", CorrectedView.as_view(), name="corrected"),
+    path("report-submitted/saved/", SavedView.as_view(), name="saved"),
+    path("report-submitted/saved/closed/", ClosedView.as_view(), name="closed"),
+    path("koroleva/", KorolevaView.as_view(), name="koroleva"),
+    path("count_visits/", CountVisitsView.as_view(), name="count_visits"),
+    path(
+        "count_visits/brief", CountVisitsBriefView.as_view(), name="count_visits_brief"
+    ),
+    path("schedule", ScheduleView.as_view(), name="schedule"),
+    path("count_visits/full", CountVisitsFullView.as_view(), name="count_visits_full"),
+    path("cash_report/", KorolevaCashReportView.as_view(), name="coroleva_cash_report"),
 ]

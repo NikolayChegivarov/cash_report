@@ -1,15 +1,54 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.utils.html import mark_safe
+from django.contrib import admin
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
+
+
+DAYS_OF_WEEK = [
+    ("monday", "Понедельник"),
+    ("tuesday", "Вторник"),
+    ("wednesday", "Среда"),
+    ("thursday", "Четверг"),
+    ("friday", "Пятница"),
+    ("saturday", "Суббота"),
+    ("sunday", "Воскресенье"),
+]
 
 
 class Address(models.Model):
     """Модель с адресами."""
-    city = models.CharField(max_length=100, verbose_name='Город')
-    street = models.CharField(max_length=100, verbose_name='Улица')
-    home = models.CharField(max_length=10, verbose_name='Номер дома')
+
+    city = models.CharField(max_length=100, verbose_name="Город")
+    street = models.CharField(max_length=100, verbose_name="Улица")
+    home = models.CharField(max_length=10, verbose_name="Номер дома")
 
     def __str__(self):
         return f"{self.city}, {self.street}, {self.home}"
+
+    class Meta:
+        ordering = ["city", "street", "home"]
+
+
+class Schedule(models.Model):
+    address = models.ForeignKey(
+        Address,
+        on_delete=models.CASCADE,
+        related_name="address_schedules",
+        null=True,
+        blank=True,
+    )
+    day_of_week = models.CharField(
+        max_length=9, choices=DAYS_OF_WEEK, verbose_name="День недели"
+    )
+    opening_time = models.TimeField(verbose_name="Время открытия")
+    closing_time = models.TimeField(verbose_name="Время закрытия")
+
+    def __str__(self):
+        return f"{self.get_day_of_week_display()}: {self.opening_time} - {self.closing_time}"
 
 
 class CustomUserManager(BaseUserManager):  # Переопределяю методы для CustomUser
@@ -21,12 +60,20 @@ class CustomUserManager(BaseUserManager):  # Переопределяю мето
     def create_user(self, username, password=None, **extra_fields):
         """Создает нового пользователя."""
         fields = (
-            'username', 'email', 'last_name', 'first_name', 'patronymic', 'is_active', 'is_staff', 'is_superuser',
-            'groups',
-            'user_permissions')
+            "username",
+            "email",
+            "last_name",
+            "first_name",
+            "patronymic",
+            "is_active",
+            "is_staff",
+            "is_superuser",
+            "groups",
+            "user_permissions",
+        )
         # Проверка наличия username, если его нет, выбрасывается исключение
         if not username:
-            raise ValueError('Поле Имя пользователя должно быть установлено')
+            raise ValueError("Поле Имя пользователя должно быть установлено")
         # Создание экземпляра пользователя с заданными параметрами.
         user = self.model(username=username, **extra_fields)
         # Установка пароля для пользователя
@@ -49,8 +96,12 @@ class CustomUserManager(BaseUserManager):  # Переопределяю мето
             User: Объект созданного суперпользователя.
         """
         # Установка полей is_staff и is_superuser в True по умолчанию
-        extra_fields.setdefault('is_staff', True)  # по умолчанию не имеет доступа к административной панели Django.
-        extra_fields.setdefault('is_superuser', True)  # по умолчанию пользователь не является суперпользователем.
+        extra_fields.setdefault(
+            "is_staff", True
+        )  # по умолчанию не имеет доступа к административной панели Django.
+        extra_fields.setdefault(
+            "is_superuser", True
+        )  # по умолчанию пользователь не является суперпользователем.
         # Вызов метода create_user для создания суперпользователя с заданными параметрами
         return self.create_user(username, password, **extra_fields)
 
@@ -62,18 +113,31 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     Наследуется от AbstractBaseUser и PermissionsMixin для реализации
     пользовательской аутентификации и управления правами доступа.
     """
-    username = models.CharField(max_length=100, unique=True, verbose_name='Имя пользователя',
-                                default='default_username')
-    email = models.EmailField(unique=True, verbose_name='Email', blank=True, null=True)
-    last_name = models.CharField(max_length=100, verbose_name='Фамилия', blank=True, null=True)
-    first_name = models.CharField(max_length=100, verbose_name='Имя', blank=True, null=True)
-    patronymic = models.CharField(max_length=100, verbose_name='Отчество', blank=True, null=True)
-    is_active = models.BooleanField(default=True)  # Если не активен, то не сможет авторизоваться на сайте.
+
+    username = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name="Имя пользователя",
+        default="default_username",
+    )
+    email = models.EmailField(unique=True, verbose_name="Email", blank=True, null=True)
+    last_name = models.CharField(
+        max_length=100, verbose_name="Фамилия", blank=True, null=True
+    )
+    first_name = models.CharField(
+        max_length=100, verbose_name="Имя", blank=True, null=True
+    )
+    patronymic = models.CharField(
+        max_length=100, verbose_name="Отчество", blank=True, null=True
+    )
+    is_active = models.BooleanField(
+        default=True
+    )  # Если не активен, то не сможет авторизоваться на сайте.
     is_staff = models.BooleanField(default=False)  # Может ли войти в "админку".
 
     objects = CustomUserManager()
 
-    USERNAME_FIELD = 'username'  # Изменено на 'username'
+    USERNAME_FIELD = "username"  # Изменено на 'username'
 
     def __str__(self):
         return self.username
@@ -81,6 +145,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 class CashRegisterChoices(models.TextChoices):  # Разновидность кассы.
     """Варианты кассовых аппаратов."""
+
     BUYING_UP = "BUYING_UP", "Скупка"
     PAWNSHOP = "PAWNSHOP", "Ломбард"
     TECHNIQUE = "TECHNIQUE", "Техника"
@@ -96,41 +161,98 @@ class CashReportStatusChoices(models.TextChoices):  # Статусы отчет�
 
 class CashReport(models.Model):
     """Модель кассового отчета."""
-    shift_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата смены')
-    id_address = models.ForeignKey(Address, on_delete=models.CASCADE, verbose_name='Адрес')
+
+    shift_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата смены")
+    id_address = models.ForeignKey(
+        Address, on_delete=models.CASCADE, verbose_name="Адрес"
+    )
     cas_register = models.CharField(
         max_length=10,
         choices=CashRegisterChoices.choices,
     )
     cash_balance_beginning = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name='Остаток денежных средств в начале', blank=False, null=True)
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Остаток денежных средств в начале",
+        blank=False,
+        null=True,
+    )
     introduced = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name='Внесено в кассу', blank=False, null=True, default=0.00)
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Внесено в кассу",
+        blank=False,
+        null=True,
+        default=0.00,
+    )
     interest_return = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name='Средства от процентов с залога, возврата выданных займов',
-        blank=False, null=True, default=0.00)
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Средства от процентов с залога, возврата выданных займов",
+        blank=False,
+        null=True,
+        default=0.00,
+    )
     loans_issued = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name='Выдано займов', blank=False, null=True, default=0.00)
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Выдано займов",
+        blank=False,
+        null=True,
+        default=0.00,
+    )
     used_farming = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name='На хоз. нужды, оплату труда', blank=False, null=True,
-        default=0.00)
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="На хоз. нужды, оплату труда",
+        blank=False,
+        null=True,
+        default=0.00,
+    )
     boss_took_it = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name='Выемка денежных средств руководителем', blank=False,
-        null=True, default=0.00)
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Выемка денежных средств руководителем",
+        blank=False,
+        null=True,
+        default=0.00,
+    )
     cash_register_end = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name='Остаток на конец дня', blank=False, null=True)
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Остаток на конец дня",
+        blank=False,
+        null=True,
+    )
     author = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, verbose_name='Сотрудник смены', blank=False, null=True)
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата изменения', blank=False, null=True)
+        CustomUser,
+        on_delete=models.CASCADE,
+        verbose_name="Сотрудник смены",
+        blank=False,
+        null=True,
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True, verbose_name="Дата изменения", blank=False, null=True
+    )
     status = models.CharField(
         max_length=10,
         choices=CashReportStatusChoices.choices,
-        default=CashReportStatusChoices.OPEN
+        default=CashReportStatusChoices.OPEN,
     )
 
     class Meta:
-        unique_together = ('shift_date', 'id_address', 'cas_register', 'cash_balance_beginning', 'introduced',
-                           'interest_return', 'loans_issued', 'used_farming', 'boss_took_it', 'cash_register_end')
+        unique_together = (
+            "shift_date",
+            "id_address",
+            "cas_register",
+            "cash_balance_beginning",
+            "introduced",
+            "interest_return",
+            "loans_issued",
+            "used_farming",
+            "boss_took_it",
+            "cash_register_end",
+        )
 
     def __str__(self):
         fields = [
@@ -146,6 +268,6 @@ class CashReport(models.Model):
             f"cash_register_end: {self.cash_register_end}",
             f"author: {self.author}",
             f"updated_at: {self.updated_at}",
-            f"status: {self.status}"
+            f"status: {self.status}",
         ]
         return "\n".join(fields)

@@ -487,16 +487,20 @@ class ReportSubmittedView(FormView):
 
 
 class CorrectedView(FormView):
-    """Страница корректировки отчета."""
+    """
+    Страница корректировки собственного отчета сотрудником.
+    """
 
     template_name = "сorrected.html"
     form_class = MultiCashReportForm
 
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
-        """Метод dispatch является отправной точкой для всех запросов в представлении класса.
+        """
+        Метод dispatch является отправной точкой для всех запросов в представлении класса.
         Применяя декоратор к этому методу, мы обеспечиваем, что проверка CSRF будет
-        выполняться для всех типов запросов (GET, POST и т.д.)."""
+        выполняться для всех типов запросов (GET, POST и т.д.).
+        """
         return super().dispatch(request, *args, **kwargs)
 
     def get_initial(self):
@@ -663,16 +667,20 @@ class CorrectedView(FormView):
 
 
 class SavedView(FormView):
-    """Страница сохранения."""
+    """
+    Страница сохранения.
+    """
 
     template_name = "report_submitted_saved.html"
     form_class = SavedForm
 
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
-        """Метод dispatch является отправной точкой для всех запросов в представлении класса.
+        """
+        Метод dispatch является отправной точкой для всех запросов в представлении класса.
         Применяя декоратор к этому методу, мы обеспечиваем, что проверка CSRF будет
-        выполняться для всех типов запросов (GET, POST и т.д.)."""
+        выполняться для всех типов запросов (GET, POST и т.д.).
+        """
         return super().dispatch(request, *args, **kwargs)
 
     def get_initial(self):
@@ -816,13 +824,17 @@ class CountVisitsView(TemplateView):
 
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
-        """Метод dispatch является отправной точкой для всех запросов в представлении класса.
+        """
+        Метод dispatch является отправной точкой для всех запросов в представлении класса.
         Применяя декоратор к этому методу, мы обеспечиваем, что проверка CSRF будет
-        выполняться для всех типов запросов (GET, POST и т.д.)."""
+        выполняться для всех типов запросов (GET, POST и т.д.).
+        """
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        """Создает экземпляр формы YearMonthForm и передает его в шаблон."""
+        """
+        Создает экземпляр формы YearMonthForm и передает его в шаблон.
+        """
         form = YearMonthForm()
         return self.render_to_response({"form": form})
 

@@ -1,9 +1,17 @@
 {% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <title>Выбор адреса</title>
+</head>
+
 <h2>Выберите адрес:</h2>
+
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit">Выбрать адрес</button>
 </form>
+
 {% endblock %}
 

@@ -1,5 +1,12 @@
 {% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <title>Кассы</title>
+</head>
+
 <h2>Внесите изменения в кассах:</h2>
+
 <form method="post">
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ next }}">

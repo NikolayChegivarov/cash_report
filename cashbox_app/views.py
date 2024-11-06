@@ -37,8 +37,6 @@ logger = logging.getLogger(__name__)
 
 logging.basicConfig(level=logging.DEBUG)
 
-from django.db.models import Prefetch
-
 
 class CustomLoginView(LoginView):
     """Представление для авторизации."""
@@ -835,7 +833,9 @@ class ScheduleView(TemplateView):
         """
         form = ScheduleForm()
 
-        CashReport_Address = CashReport.objects.select_related("id_address").all()
+        CashReport_Address = CashReport.objects.select_related(
+            "id_address"
+        ).values_list("id_address__city", "id_address__street", "id_address__home")
 
         context = {"form": form, "CashReport_Address": CashReport_Address}
 
@@ -910,7 +910,7 @@ class CountVisitsBriefView(TemplateView):
         year = self.request.GET.get("year")
         month = self.request.GET.get("month")
 
-        print(f"Получаем Год,месяц 1: {year}.{month}")
+        print(f"Получаем Год, месяц 1: {year}.{month}")
 
         try:
             year_int = int(year)
@@ -935,7 +935,7 @@ class CountVisitsBriefView(TemplateView):
 
             # Для понятного вывода в консоль используем pandas.
             df = pd.DataFrame(filtered_records)
-            df_sorted = df.sort_values("author__username")
+            df_sorted = df.sort_values("count_author__username")
             print("\nУпорядоченный порядок:")
             print(df_sorted)
 

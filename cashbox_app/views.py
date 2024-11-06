@@ -934,10 +934,10 @@ class CountVisitsBriefView(TemplateView):
             print(f"Фильтрованные записи: {filtered_records}")
 
             # Для понятного вывода в консоль используем pandas.
-            df = pd.DataFrame(filtered_records)
-            df_sorted = df.sort_values("count_author__username")
-            print("\nУпорядоченный порядок:")
-            print(df_sorted)
+            # df = pd.DataFrame(filtered_records)
+            # df_sorted = df.sort_values("count_author__username")
+            # print("\nУпорядоченный порядок:")
+            # print(df_sorted)
 
             # Преобразуем QuerySet в список объектов для HTML.
             records_list = list(filtered_records)
@@ -999,10 +999,10 @@ class CountVisitsFullView(TemplateView):
             print(f"Фильтрованные записи: {filtered_records}")
 
             # Для понятного вывода в консоль используем pandas.
-            df = pd.DataFrame(filtered_records)
-            df_sorted = df.sort_values("author__username")
-            print("\nУпорядоченный порядок:")
-            print(df_sorted)
+            # df = pd.DataFrame(filtered_records)
+            # df_sorted = df.sort_values("author__username")
+            # print("\nУпорядоченный порядок:")
+            # print(df_sorted)
 
             # Преобразуем QuerySet в список объектов для HTML.
             records_list = list(filtered_records)

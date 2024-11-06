@@ -1,6 +1,4 @@
 from django.db import models
-from django.utils.html import mark_safe
-from django.contrib import admin
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,

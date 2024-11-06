@@ -2,15 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Привет Настя</title>
+    <title>Соблюдение расписания</title>
 </head>
 <body>
-<h1>Отчет расписание</h1>
-<h2>Отчет расписание</h2>
+<h1>Поля</h1>
 
-<!--<button onclick="window.location.href='{% url 'coroleva_cash_report' %}'">Кассовый отчет</button>-->
-<!--<button onclick="window.location.href='{% url 'count_visits' %}'">Количество посещений</button>-->
-<!--<button onclick="window.location.href='{% url 'schedule' %}'">Расписание</button>-->
+{% if debug_info %}
+<div class="debug-info">
+    {{ debug_info }}
+</div>
+{% endif %}
 
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <!--    <input type="submit" name="action" value="Краткий отчет"/>-->
+    <!--    <input type="submit" name="action" value="Полный отчет"/>-->
+
+    <h2>Отчет:</h2>
+    <ul>
+        {% for address in CashReport_Address %}
+        <li>{{ address }}</li>
+        {% endfor %}
+    </ul>
+</form>
 </body>
 </html>

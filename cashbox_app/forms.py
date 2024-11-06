@@ -443,3 +443,23 @@ class YearMonthForm(forms.Form):
         month = cleaned_data.get("month")
 
         return cleaned_data
+
+
+class ScheduleForm(forms.Form):
+
+    addresses = forms.ModelChoiceField(
+        queryset=Address.objects.all(), empty_label="Выберите адрес"
+    )
+
+    username = forms.ModelChoiceField(
+        queryset=CustomUser.objects.filter(is_active=True),
+        to_field_name="username",
+        label="Имя пользователя",
+        empty_label=None,
+    )
+
+    class Meta:
+        model = CustomUser, Address
+        fields = ["username", "password", "city", "street", "home"]
+
+    pass

@@ -21,6 +21,7 @@ from cashbox_app.forms import (
     SavedForm,
     MultiCashReportForm,
     YearMonthForm,
+    ScheduleForm,
 )
 from cashbox_app.models import (
     Address,
@@ -35,6 +36,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 logging.basicConfig(level=logging.DEBUG)
+
+from django.db.models import Prefetch
 
 
 class CustomLoginView(LoginView):
@@ -803,32 +806,40 @@ class ClosedView(View):
 
 
 class KorolevaView(TemplateView):
-    """Страница выбора отчета для руководителя."""
+    """
+    Страница выбора отчета для руководителя.
+    """
 
     template_name = "koroleva.html"
 
 
 class ScheduleView(TemplateView):
+    """
+    Страница отчета соблюдения расписания.
+    """
 
     template_name = "schedule.html"
 
-    # @method_decorator(csrf_protect)
-    # def dispatch(self, request, *args, **kwargs):
-    #     """
-    #     Метод dispatch является отправной точкой для всех запросов в представлении класса.
-    #     Применяя декоратор к этому методу, мы обеспечиваем, что проверка CSRF будет
-    #     выполняться для всех типов запросов (GET, POST и т.д.).
-    #     """
-    #     return super().dispatch(request, *args, **kwargs)
-    #
-    # def get(self, request, *args, **kwargs):
-    #     """
-    #     Создает экземпляр формы YearMonthForm и передает его в шаблон.
-    #     """
-    #     # form = YearMonthForm()
-    #     # return self.render_to_response({"form": form})
-    #     all_records = Address.objects.all()
-    #     pass
+    @method_decorator(csrf_protect)
+    def dispatch(self, request, *args, **kwargs):
+        """
+        Метод dispatch является отправной точкой для всех запросов в представлении класса.
+        Применяя декоратор к этому методу, мы обеспечиваем, что проверка CSRF будет
+        выполняться для всех типов запросов (GET, POST и т.д.).
+        """
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        """
+        Создает экземпляр формы YearMonthForm и передает его в шаблон.
+        """
+        form = ScheduleForm()
+
+        CashReport_Address = CashReport.objects.select_related("id_address").all()
+
+        context = {"form": form, "CashReport_Address": CashReport_Address}
+
+        return self.render_to_response(context)
 
 
 class CountVisitsView(TemplateView):

@@ -405,10 +405,6 @@ class SavedForm(forms.Form):
         choices=CashReportStatusChoices.choices, initial=CashReportStatusChoices.CLOSED
     )
 
-    # def save(self):
-    #     shift_date = datetime.now()
-    #     status = self.cleaned_data['status']
-
 
 class YearMonthForm(forms.Form):
     """
@@ -451,15 +447,26 @@ class ScheduleForm(forms.Form):
         queryset=Address.objects.all(), empty_label="Выберите адрес"
     )
 
-    username = forms.ModelChoiceField(
-        queryset=CustomUser.objects.filter(is_active=True),
-        to_field_name="username",
-        label="Имя пользователя",
-        empty_label=None,
+    year = forms.IntegerField(
+        label="Год", min_value=1900, max_value=2100, required=True
     )
 
-    class Meta:
-        model = CustomUser, Address
-        fields = ["username", "password", "city", "street", "home"]
+    month = forms.IntegerField(label="Месяц", min_value=1, max_value=12, required=True)
 
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Получаем текущую дату
+        today = datetime.now()
+
+        # Устанавливаем текущий год в поле 'year'
+        self.fields["year"].initial = today.year
+
+        # Вычисляем предыдущий месяц
+        previous_month = today.replace(day=1) - timedelta(days=1)
+
+        # Устанавливаем предыдущий месяц в поле 'month'
+        self.fields["month"].initial = previous_month.month
+
+    class Meta:
+        fields = ["addresses", "year", "month"]

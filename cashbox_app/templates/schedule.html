@@ -2,30 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Соблюдение расписания</title>
+    <title>Фильтр расписания</title>
 </head>
 <body>
-<h1>Поля</h1>
-
-{% if debug_info %}
-<div class="debug-info">
-    {{ debug_info }}
-</div>
-{% endif %}
+<h1>Установите необходимые параметры</h1>
 
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
 
-    <!--    <input type="submit" name="action" value="Краткий отчет"/>-->
-    <!--    <input type="submit" name="action" value="Полный отчет"/>-->
+    <input type="submit" name="action" value="Получить отчет"/>
 
-    <h2>Отчет:</h2>
-    <ul>
-        {% for address in CashReport_Address %}
-        <li>{{ address }}</li>
-        {% endfor %}
-    </ul>
 </form>
 </body>
 </html>

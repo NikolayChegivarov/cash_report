@@ -1,20 +1,28 @@
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse_lazy, reverse
 from django.contrib.auth import login, authenticate
 from django.http import Http404
 from django.shortcuts import render, redirect
-from django.db.models import Prefetch
-from django.db.models import F
-from django.db.models.functions import ExtractYear, ExtractMonth, ExtractDay
-from django.db.models import Count
-from django.db.models import Max
 from django.views import View
 from django.views.generic import FormView, TemplateView
 from django.views.decorators.csrf import csrf_protect
 from django.utils.timezone import now
 from django.utils.decorators import method_decorator
-import pandas as pd
+from django.urls import reverse_lazy, reverse
+from django.db.models import Prefetch
+from django.db.models import F, Case, Value, When
+from django.db.models import Count
+from django.db.models import Max
+from django.db.models.fields import CharField
+from django.db.models.functions import (
+    ExtractYear,
+    ExtractMonth,
+    ExtractDay,
+    TruncDate,
+    ExtractHour,
+    ExtractMinute,
+    ExtractWeekDay,
+)
 from cashbox_app.forms import (
     CustomAuthenticationForm,
     AddressSelectionForm,
@@ -29,8 +37,9 @@ from cashbox_app.models import (
     CashRegisterChoices,
     CashReportStatusChoices,
     CustomUser,
+    Schedule,
 )
-
+import pandas as pd
 import logging
 
 logger = logging.getLogger(__name__)
@@ -813,10 +822,11 @@ class KorolevaView(TemplateView):
 
 class ScheduleView(TemplateView):
     """
-    Страница отчета соблюдения расписания.
+    Страница фильтра отчета соблюдения расписания.
     """
 
     template_name = "schedule.html"
+    form_class = ScheduleForm
 
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
@@ -827,19 +837,167 @@ class ScheduleView(TemplateView):
         """
         return super().dispatch(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = self.form_class()
+
     def get(self, request, *args, **kwargs):
         """
-        Создает экземпляр формы YearMonthForm и передает его в шаблон.
+        Обработка GET-запроса
         """
         form = ScheduleForm()
-
-        CashReport_Address = CashReport.objects.select_related(
-            "id_address"
-        ).values_list("id_address__city", "id_address__street", "id_address__home")
-
-        context = {"form": form, "CashReport_Address": CashReport_Address}
-
+        context = {"form": form}
         return self.render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST)
+        if request.POST.get("action") == "Получить отчет":
+            if form.is_valid():
+                schedule_data = {
+                    "addresses": form.cleaned_data["addresses"].id,
+                    "year": form.cleaned_data["year"],
+                    "month": form.cleaned_data["month"],
+                }
+
+                print("Полученные данные:", schedule_data)
+
+                # Добавляем данные в сессию.
+                request.session["schedule_form_data"] = schedule_data
+
+                return redirect("schedule_report")
+
+
+class ScheduleReportView(TemplateView):
+    """Отчет по соблюдению расписания."""
+
+    template_name = "schedule_report.html"
+
+    def get(self, request, *args, **kwargs):
+
+        # Получаем данные из сессии введенные пользователем на предыдущем этапе.
+        if "schedule_form_data" in request.session:
+            schedule_data = request.session.pop("schedule_form_data")
+            print("Retrieved data:", schedule_data)
+            addresses = schedule_data["addresses"]
+            year = schedule_data["year"]
+            month = schedule_data["month"]
+            print(type(year))
+
+            print(f"Поделили: {addresses} {year} {month} ")
+
+            # Запрос отчета.
+            days_of_week = [
+                "Понедельник",
+                "Вторник",
+                "Среда",
+                "Четверг",
+                "Пятница",
+                "Суббота",
+                "Воскресенье",
+            ]
+
+            ScheduleReport = (
+                CashReport.objects.filter(
+                    updated_at__year=year,
+                    updated_at__month=month,
+                    cas_register=CashRegisterChoices.BUYING_UP,
+                )
+                .select_related("id_address")
+                .annotate(
+                    date=TruncDate("shift_date"),
+                    hour=ExtractHour("shift_date"),
+                    minute=ExtractMinute("shift_date"),
+                    hour_end=ExtractHour("updated_at"),
+                    minute_end=ExtractMinute("shift_date"),
+                    day_number=ExtractWeekDay("date"),
+                    day_of_week=Case(
+                        *[
+                            When(day_number=i, then=Value(days_of_week[i - 1]))
+                            for i in range(1, 8)
+                        ],
+                        output_field=CharField(),
+                    ),
+                )
+                .values(
+                    "id_address__street",
+                    "id_address__home",
+                    "date",
+                    "hour",
+                    "minute",
+                    "author__username",
+                    "hour_end",
+                    "minute_end",
+                    "day_of_week",
+                )
+            )
+
+            # for report in ScheduleReport:
+            #     print(report["author__username"])
+
+            print(f"QuerySet: {ScheduleReport}")
+            print("Конец QuerySet")
+
+            # Для понятного вывода в консоль используем pandas.
+            df = pd.DataFrame(ScheduleReport)
+            # df_sorted = df.sort_values("author__username")
+            print("\nУпорядоченный порядок:")
+            print(df)
+
+            pass
+
+        return render(request, self.template_name)
+
+    # # Получаем год и месяц из запроса GET
+    # # Не понятно почему, но здесь приходится менять местами год с месяцем.
+    # year = self.request.GET.get("month")
+    # month = self.request.GET.get("year")
+    #
+    # print(f"Получаем Год,месяц 2: {year}.{month}")
+    #
+    # try:
+    #     year_int = int(year)
+    #     month_int = int(month)
+    #
+    #     filtered_records = (
+    #         CashReport.objects.filter(
+    #             updated_at__year=year_int,  # Фильтруем записи по году и месяцу
+    #             updated_at__month=month_int,
+    #             cas_register=CashRegisterChoices.BUYING_UP,  # Оставляем результат только одной кассы.
+    #         )
+    #         .select_related("author")
+    #         .prefetch_related(  # Джойним CustomUser что бы получить username
+    #             Prefetch("author", queryset=CustomUser.objects.only("username"))
+    #         )
+    #         .values(  # Выводим следующие столбцы.
+    #             # 'updated_at',
+    #             # 'author__username'
+    #             year=ExtractYear("updated_at"),
+    #             month=ExtractMonth("updated_at"),
+    #             day=ExtractDay("updated_at"),
+    #             author__username=F("author__username"),
+    #         )
+    #         .order_by("author__username")
+    #     )  # Упорядочим по автору.
+    #
+    #     print(f"Фильтрованные записи: {filtered_records}")
+
+    # Для понятного вывода в консоль используем pandas.
+    # df = pd.DataFrame(filtered_records)
+    # df_sorted = df.sort_values("author__username")
+    # print("\nУпорядоченный порядок:")
+    # print(df_sorted)
+
+    #     # Преобразуем QuerySet в список объектов для HTML.
+    #     records_list = list(filtered_records)
+    #
+    #     context["records_list"] = records_list
+    #
+    # except ValueError:
+    #     # Обрабатываем ошибку при неверном формате года или месяца.
+    #     logger.error(f"Invalid year or month format: {year}, {month}")
+    #     raise Http404("Неверный формат года или месяца")
+    #
+    # return context
 
 
 class CountVisitsView(TemplateView):

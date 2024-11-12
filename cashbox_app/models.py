@@ -6,17 +6,6 @@ from django.contrib.auth.models import (
 )
 
 
-DAYS_OF_WEEK = [
-    ("monday", "Понедельник"),
-    ("tuesday", "Вторник"),
-    ("wednesday", "Среда"),
-    ("thursday", "Четверг"),
-    ("friday", "Пятница"),
-    ("saturday", "Суббота"),
-    ("sunday", "Воскресенье"),
-]
-
-
 class Address(models.Model):
     """Модель с адресами."""
 
@@ -29,6 +18,17 @@ class Address(models.Model):
 
     class Meta:
         ordering = ["city", "street", "home"]
+
+
+DAYS_OF_WEEK = [
+    ("monday", "Понедельник"),
+    ("tuesday", "Вторник"),
+    ("wednesday", "Среда"),
+    ("thursday", "Четверг"),
+    ("friday", "Пятница"),
+    ("saturday", "Суббота"),
+    ("sunday", "Воскресенье"),
+]
 
 
 class Schedule(models.Model):

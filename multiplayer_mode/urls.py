@@ -30,6 +30,7 @@ from cashbox_app.views import (
     SavedView,
     ClosedView,
     ScheduleView,
+    ScheduleReportView,
 )
 
 urlpatterns = [
@@ -49,6 +50,7 @@ urlpatterns = [
         "count_visits/brief", CountVisitsBriefView.as_view(), name="count_visits_brief"
     ),
     path("schedule", ScheduleView.as_view(), name="schedule"),
+    path("schedule/report", ScheduleReportView.as_view(), name="schedule_report"),
     path("count_visits/full", CountVisitsFullView.as_view(), name="count_visits_full"),
     path("cash_report/", KorolevaCashReportView.as_view(), name="coroleva_cash_report"),
 ]

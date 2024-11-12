@@ -40,6 +40,11 @@ from cashbox_app.models import (
     Schedule,
 )
 import pandas as pd
+
+# Увеличиваем максимальное количество отображаемых столбцов в pandas
+pd.set_option("display.max_columns", None)
+# Увеличиваем ширину вывода в pandas
+pd.set_option("display.width", 1000)
 import logging
 
 logger = logging.getLogger(__name__)

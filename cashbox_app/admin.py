@@ -5,6 +5,10 @@ from .models import CustomUser, Address, Schedule
 
 @admin.register(Address)
 class AddressAdmin(admin.ModelAdmin):
+    """
+    Настраивает отображение и функциональность модели Address в административной панели Django.
+    """
+
     list_display = ("__str__", "id", "get_address_schedules")
     search_fields = ["city", "street", "home"]
     list_filter = ["city"]
@@ -29,23 +33,41 @@ class AddressAdmin(admin.ModelAdmin):
 
 @admin.register(Schedule)
 class AddressScheduleAdmin(admin.ModelAdmin):
+    """
+    Настраивает отображение и функциональность модели Schedule в административной панели Django.
+    """
+
     list_display = (
         "day_of_week",
-        "opening_time",
-        "closing_time",
-        "get_adress_id",  # Добавляем новое поле
+        "formatted_opening_time",
+        "formatted_closing_time",
+        "get_adress_id",
     )
     list_filter = ["day_of_week"]
 
-    def get_adress_id(self, obj):  # Создаем новый метод
+    def formatted_opening_time(self, obj):
+        return obj.opening_time.strftime("%H:%M")
+
+    formatted_opening_time.short_description = "Время открытия"
+
+    def formatted_closing_time(self, obj):
+        return obj.closing_time.strftime("%H:%M")
+
+    formatted_closing_time.short_description = "Время закрытия"
+
+    def get_adress_id(self, obj):
         return obj.address.id if obj.address else "-"
 
-    get_adress_id.short_description = "ID адреса"  # Устанавливаем описание поля
+    get_adress_id.short_description = "ID адреса"
 
 
 # Добавить пользователя.
 @admin.register(CustomUser)
 class CustomUserAdmin(BaseUserAdmin):
+    """
+    Настраивает отображение и функциональность модели CustomUser в административной панели Django.
+    """
+
     fieldsets = (
         (None, {"fields": ("username", "password")}),
         ("Personal info", {"fields": ("first_name", "last_name", "email")}),

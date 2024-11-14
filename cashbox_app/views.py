@@ -888,10 +888,6 @@ DAYS_OF_WEEK = [
 ]
 
 
-def format_date(date_obj):
-    return datetime.combine(date_obj.date(), datetime.min.time()).strftime("%Y-%m-%d")
-
-
 def format_date_expr(date_expr):
     return Func(date_expr, function="DATE", template="%(function)s(%(expressions)s)")
 
@@ -931,7 +927,7 @@ class ScheduleReportView(TemplateView):
                 )
                 .select_related("id_address")
                 .annotate(
-                    shift_date_display=format_date_expr("shift_date"),
+                    date=format_date_expr("shift_date"),
                     day_number=ExtractWeekDay(F("shift_date")),
                     day_of_week=Case(
                         *[
@@ -944,7 +940,7 @@ class ScheduleReportView(TemplateView):
                 .values(
                     "id_address__street",
                     "id_address__home",
-                    "shift_date_display",
+                    "date",
                     "author__username",
                     "day_of_week",
                 )

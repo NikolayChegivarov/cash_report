@@ -45,6 +45,7 @@ from django.db.models import F, Func, Subquery, OuterRef, Case, Value, CharField
 from django.db.models.functions import TruncDate, ExtractHour, ExtractMinute
 from django.utils.timezone import now
 from datetime import datetime
+from datetime import time
 
 # Увеличиваем максимальное количество отображаемых столбцов в pandas
 pd.set_option("display.max_columns", None)
@@ -877,19 +878,14 @@ class ScheduleView(TemplateView):
                 return redirect("schedule_report")
 
 
-DAYS_OF_WEEK = [
-    ("monday", "Понедельник"),
-    ("tuesday", "Вторник"),
-    ("wednesday", "Среда"),
-    ("thursday", "Четверг"),
-    ("friday", "Пятница"),
-    ("saturday", "Суббота"),
-    ("sunday", "Воскресенье"),
-]
-
-
 def format_date_expr(date_expr):
     return Func(date_expr, function="DATE", template="%(function)s(%(expressions)s)")
+
+
+def format_time_expr(date_expr):
+    return Func(
+        date_expr, function="TO_CHAR", template="TO_CHAR(%(expressions)s, 'HH24:MI:SS')"
+    )
 
 
 class ScheduleReportView(TemplateView):
@@ -899,10 +895,11 @@ class ScheduleReportView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         if "schedule_form_data" in request.session:
-            schedule_data = request.session.pop("schedule_form_data")
-            addresses = schedule_data["addresses"]
-            year = schedule_data["year"]
-            month = schedule_data["month"]
+            session_data = request.session.pop("schedule_form_data")
+            print(f"schedule_data: {session_data}")
+            addresses = session_data["addresses"]
+            year = session_data["year"]
+            month = session_data["month"]
 
             days_of_week = [
                 "Понедельник",
@@ -927,7 +924,9 @@ class ScheduleReportView(TemplateView):
                 )
                 .select_related("id_address")
                 .annotate(
+                    annotated_shift_date=F("shift_date"),
                     date=format_date_expr("shift_date"),
+                    time=format_time_expr("shift_date"),
                     day_number=ExtractWeekDay(F("shift_date")),
                     day_of_week=Case(
                         *[
@@ -940,7 +939,9 @@ class ScheduleReportView(TemplateView):
                 .values(
                     "id_address__street",
                     "id_address__home",
+                    "annotated_shift_date",
                     "date",
+                    "time",
                     "author__username",
                     "day_of_week",
                 )

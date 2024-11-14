@@ -41,6 +41,9 @@ from cashbox_app.models import (
 )
 import pandas as pd
 
+from django.db.models import F, Subquery, OuterRef, Case, Value, CharField
+from django.db.models.functions import TruncDate, ExtractHour, ExtractMinute
+
 # Увеличиваем максимальное количество отображаемых столбцов в pandas
 pd.set_option("display.max_columns", None)
 # Увеличиваем ширину вывода в pandas
@@ -872,25 +875,29 @@ class ScheduleView(TemplateView):
                 return redirect("schedule_report")
 
 
+DAYS_OF_WEEK = [
+    ("monday", "Понедельник"),
+    ("tuesday", "Вторник"),
+    ("wednesday", "Среда"),
+    ("thursday", "Четверг"),
+    ("friday", "Пятница"),
+    ("saturday", "Суббота"),
+    ("sunday", "Воскресенье"),
+]
+
+
 class ScheduleReportView(TemplateView):
     """Отчет по соблюдению расписания."""
 
     template_name = "schedule_report.html"
 
     def get(self, request, *args, **kwargs):
-
-        # Получаем данные из сессии введенные пользователем на предыдущем этапе.
         if "schedule_form_data" in request.session:
             schedule_data = request.session.pop("schedule_form_data")
-            print("Retrieved data:", schedule_data)
             addresses = schedule_data["addresses"]
             year = schedule_data["year"]
             month = schedule_data["month"]
-            print(type(year))
 
-            print(f"Поделили: {addresses} {year} {month} ")
-
-            # Запрос отчета.
             days_of_week = [
                 "Понедельник",
                 "Вторник",
@@ -901,11 +908,18 @@ class ScheduleReportView(TemplateView):
                 "Воскресенье",
             ]
 
-            ScheduleReport = (
+            # Создаем подзапрос для получения расписания
+            schedule_subquery = Schedule.objects.filter(
+                address_id=OuterRef("id_address"), day_of_week=F("day_of_week")
+            ).values("opening_time", "closing_time")
+
+            # Модифицируем основной запрос
+            schedule_report = (
                 CashReport.objects.filter(
                     updated_at__year=year,
                     updated_at__month=month,
                     cas_register=CashRegisterChoices.BUYING_UP,
+                    id_address=addresses,
                 )
                 .select_related("id_address")
                 .annotate(
@@ -936,19 +950,24 @@ class ScheduleReportView(TemplateView):
                 )
             )
 
-            # for report in ScheduleReport:
-            #     print(report["author__username"])
+            # Применяем подзапрос
+            schedule_report_with_schedule = schedule_report.annotate(
+                opening_time=Subquery(schedule_subquery.values("opening_time")[:1]),
+                closing_time=Subquery(schedule_subquery.values("closing_time")[:1]),
+            )
 
-            print(f"QuerySet: {ScheduleReport}")
-            print("Конец QuerySet")
+            print("\nSQL запрос:")
+            print(schedule_report_with_schedule.query)
 
             # Для понятного вывода в консоль используем pandas.
-            df = pd.DataFrame(ScheduleReport)
-            # df_sorted = df.sort_values("author__username")
-            print("\nУпорядоченный порядок:")
+            df = pd.DataFrame(list(schedule_report_with_schedule))
+
+            print("\nРезультат в формате DataFrame:")
             print(df)
 
-            pass
+            return self.render_to_response(
+                {"schedule_report": schedule_report_with_schedule}
+            )
 
         return render(request, self.template_name)
 
@@ -958,51 +977,6 @@ class ScheduleReportView(TemplateView):
     # month = self.request.GET.get("year")
     #
     # print(f"Получаем Год,месяц 2: {year}.{month}")
-    #
-    # try:
-    #     year_int = int(year)
-    #     month_int = int(month)
-    #
-    #     filtered_records = (
-    #         CashReport.objects.filter(
-    #             updated_at__year=year_int,  # Фильтруем записи по году и месяцу
-    #             updated_at__month=month_int,
-    #             cas_register=CashRegisterChoices.BUYING_UP,  # Оставляем результат только одной кассы.
-    #         )
-    #         .select_related("author")
-    #         .prefetch_related(  # Джойним CustomUser что бы получить username
-    #             Prefetch("author", queryset=CustomUser.objects.only("username"))
-    #         )
-    #         .values(  # Выводим следующие столбцы.
-    #             # 'updated_at',
-    #             # 'author__username'
-    #             year=ExtractYear("updated_at"),
-    #             month=ExtractMonth("updated_at"),
-    #             day=ExtractDay("updated_at"),
-    #             author__username=F("author__username"),
-    #         )
-    #         .order_by("author__username")
-    #     )  # Упорядочим по автору.
-    #
-    #     print(f"Фильтрованные записи: {filtered_records}")
-
-    # Для понятного вывода в консоль используем pandas.
-    # df = pd.DataFrame(filtered_records)
-    # df_sorted = df.sort_values("author__username")
-    # print("\nУпорядоченный порядок:")
-    # print(df_sorted)
-
-    #     # Преобразуем QuerySet в список объектов для HTML.
-    #     records_list = list(filtered_records)
-    #
-    #     context["records_list"] = records_list
-    #
-    # except ValueError:
-    #     # Обрабатываем ошибку при неверном формате года или месяца.
-    #     logger.error(f"Invalid year or month format: {year}, {month}")
-    #     raise Http404("Неверный формат года или месяца")
-    #
-    # return context
 
 
 class CountVisitsView(TemplateView):

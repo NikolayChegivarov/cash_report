@@ -41,8 +41,10 @@ from cashbox_app.models import (
 )
 import pandas as pd
 
-from django.db.models import F, Subquery, OuterRef, Case, Value, CharField
+from django.db.models import F, Func, Subquery, OuterRef, Case, Value, CharField
 from django.db.models.functions import TruncDate, ExtractHour, ExtractMinute
+from django.utils.timezone import now
+from datetime import datetime
 
 # Увеличиваем максимальное количество отображаемых столбцов в pandas
 pd.set_option("display.max_columns", None)
@@ -886,6 +888,14 @@ DAYS_OF_WEEK = [
 ]
 
 
+def format_date(date_obj):
+    return datetime.combine(date_obj.date(), datetime.min.time()).strftime("%Y-%m-%d")
+
+
+def format_date_expr(date_expr):
+    return Func(date_expr, function="DATE", template="%(function)s(%(expressions)s)")
+
+
 class ScheduleReportView(TemplateView):
     """Отчет по соблюдению расписания."""
 
@@ -908,12 +918,10 @@ class ScheduleReportView(TemplateView):
                 "Воскресенье",
             ]
 
-            # Создаем подзапрос для получения расписания
             schedule_subquery = Schedule.objects.filter(
                 address_id=OuterRef("id_address"), day_of_week=F("day_of_week")
             ).values("opening_time", "closing_time")
 
-            # Модифицируем основной запрос
             schedule_report = (
                 CashReport.objects.filter(
                     updated_at__year=year,
@@ -923,12 +931,8 @@ class ScheduleReportView(TemplateView):
                 )
                 .select_related("id_address")
                 .annotate(
-                    date=TruncDate("shift_date"),
-                    hour=ExtractHour("shift_date"),
-                    minute=ExtractMinute("shift_date"),
-                    hour_end=ExtractHour("updated_at"),
-                    minute_end=ExtractMinute("shift_date"),
-                    day_number=ExtractWeekDay("date"),
+                    shift_date_display=format_date_expr("shift_date"),
+                    day_number=ExtractWeekDay(F("shift_date")),
                     day_of_week=Case(
                         *[
                             When(day_number=i, then=Value(days_of_week[i - 1]))
@@ -940,17 +944,12 @@ class ScheduleReportView(TemplateView):
                 .values(
                     "id_address__street",
                     "id_address__home",
-                    "date",
-                    "hour",
-                    "minute",
+                    "shift_date_display",
                     "author__username",
-                    "hour_end",
-                    "minute_end",
                     "day_of_week",
                 )
             )
 
-            # Применяем подзапрос
             schedule_report_with_schedule = schedule_report.annotate(
                 opening_time=Subquery(schedule_subquery.values("opening_time")[:1]),
                 closing_time=Subquery(schedule_subquery.values("closing_time")[:1]),
@@ -959,7 +958,6 @@ class ScheduleReportView(TemplateView):
             print("\nSQL запрос:")
             print(schedule_report_with_schedule.query)
 
-            # Для понятного вывода в консоль используем pandas.
             df = pd.DataFrame(list(schedule_report_with_schedule))
 
             print("\nРезультат в формате DataFrame:")

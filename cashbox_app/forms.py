@@ -198,7 +198,8 @@ class MultiCashReportForm(forms.Form):
 
     def save(self):
         shift_date = datetime.now()
-        print(f"Начало сохранения данных. Дата: {shift_date}")
+        print(f" ")
+        print(f"{self.cleaned_data["author"]} сохраняет данные. Дата: {shift_date}")
         print(f"------------------")
 
         try:

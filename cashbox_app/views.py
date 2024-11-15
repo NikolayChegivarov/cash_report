@@ -1,3 +1,5 @@
+import pprint
+
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login, authenticate
@@ -115,9 +117,7 @@ class AddressSelectionView(FormView):
 
         # Проверяем, является ли пользователь аутентифицированным
         if current_user.is_authenticated:
-            print(
-                f"Аутентифицированный пользователь {current_user.username} выбрал адрес: {selected_address}"
-            )
+            print(f"{current_user.username} выбрал адрес: {selected_address}")
         else:
             print("Ошибка: пользователь не аутентифицирован")
 
@@ -265,7 +265,7 @@ class CashReportFormView(LoginRequiredMixin, FormView):
             form.fields["status"].disabled = True
 
         print(f"Address ID: {selected_address_id}")
-        print(f"Текущий баланс касс:\n{current_balance_}")
+        # print(f"Текущий баланс касс:\n{current_balance_}")
 
         return form
 
@@ -277,8 +277,8 @@ class CashReportFormView(LoginRequiredMixin, FormView):
         """
         form = self.get_form()
         if form.is_valid():
+            # Сохраняем результаты.
             result = form.save()
-            print(f"РЕЗУЛЬТАТ СОХРАНЕНИЯ:\n{result}")
             return self.form_valid(form)
         else:
             print("Форма невалидна:", form.errors)
@@ -469,6 +469,11 @@ class ReportSubmittedView(FormView):
         return form
 
     def post(self, request, *args, **kwargs):
+        # print("Все атрибуты request:")
+        # pprint.pprint(request.__dict__)
+        #
+        # print(request.user)
+
         form = self.get_form()
         if form.is_valid():
             submit_button = request.POST.get("submit_button")
@@ -480,11 +485,11 @@ class ReportSubmittedView(FormView):
                     status=CashReportStatusChoices.OPEN,
                 )
 
-                # Если отчет найден и его статус изменить на CLOSED
                 if cash_report:
+                    print(f"{request.user} корректирует.")
                     return redirect(reverse_lazy("corrected"))
                 else:
-                    # Если статус закрыто, то выводим на страницу 'closed'.
+                    print("Нажали 'Корректировать', но отчет уже закрыт.")
                     return redirect(reverse_lazy("closed"))
 
             elif submit_button == "Сохранить":
@@ -494,7 +499,7 @@ class ReportSubmittedView(FormView):
                     author=self.request.user,
                     status=CashReportStatusChoices.OPEN,
                 )
-                # Если отчет со статусом OPEN найден, изменяем на CLOSED.
+
                 if cash_report:
                     CashReport.objects.filter(
                         id__in=cash_report.values_list("id")
@@ -546,8 +551,8 @@ class CorrectedView(FormView):
         """
         form = self.get_form()
         if form.is_valid():
+            print(f"{request.user} сохраняет корректировку.")
             result = form.save()
-            print(f"РЕЗУЛЬТАТ СОХРАНЕНИЯ:\n{result}")
             return self.form_valid(form)
         else:
             print("Форма невалидна:", form.errors)
@@ -571,7 +576,7 @@ class CorrectedView(FormView):
 
         address_id = selected_address_id
 
-        # BUYING_UP ORM зарос
+        # BUYING_UP ORM запрос
         buying_up_reports_BUYING_UP = (
             CashReport.objects.filter(
                 cas_register=CashRegisterChoices.BUYING_UP, id_address_id=address_id
@@ -581,7 +586,7 @@ class CorrectedView(FormView):
             .first()
         )
 
-        # PAWNSHOP ORM зарос
+        # PAWNSHOP ORM запрос
         buying_up_reports_PAWNSHOP = (
             CashReport.objects.filter(
                 cas_register=CashRegisterChoices.PAWNSHOP, id_address_id=address_id
@@ -591,7 +596,7 @@ class CorrectedView(FormView):
             .first()
         )
 
-        # TECHNIQUE ORM зарос
+        # TECHNIQUE ORM запрос
         buying_up_reports_TECHNIQUE = (
             CashReport.objects.filter(
                 cas_register=CashRegisterChoices.TECHNIQUE, id_address_id=address_id
@@ -677,8 +682,6 @@ class CorrectedView(FormView):
         # Запрет на редактирование статуса.
         if hasattr(form, "fields") and "status" in form.fields:
             form.fields["status"].disabled = True
-
-        print(f"Selected address ID: {selected_address_id}")
 
         return form
 
@@ -924,9 +927,10 @@ class ScheduleReportView(TemplateView):
                 )
                 .select_related("id_address")
                 .annotate(
-                    annotated_shift_date=F("shift_date"),
+                    # annotated_shift_date=F("shift_date"),
                     date=format_date_expr("shift_date"),
-                    time=format_time_expr("shift_date"),
+                    opening_time_fact=format_time_expr("shift_date"),
+                    closing_time_fact=format_time_expr("updated_at"),
                     day_number=ExtractWeekDay(F("shift_date")),
                     day_of_week=Case(
                         *[
@@ -939,9 +943,10 @@ class ScheduleReportView(TemplateView):
                 .values(
                     "id_address__street",
                     "id_address__home",
-                    "annotated_shift_date",
+                    # "annotated_shift_date",
                     "date",
-                    "time",
+                    "opening_time_fact",
+                    "closing_time_fact",
                     "author__username",
                     "day_of_week",
                 )
@@ -965,13 +970,6 @@ class ScheduleReportView(TemplateView):
             )
 
         return render(request, self.template_name)
-
-    # # Получаем год и месяц из запроса GET
-    # # Не понятно почему, но здесь приходится менять местами год с месяцем.
-    # year = self.request.GET.get("month")
-    # month = self.request.GET.get("year")
-    #
-    # print(f"Получаем Год,месяц 2: {year}.{month}")
 
 
 class CountVisitsView(TemplateView):

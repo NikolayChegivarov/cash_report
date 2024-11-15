@@ -192,7 +192,7 @@ def current_balance(address_id):
     return balance
 
 
-class CashReportFormView(LoginRequiredMixin, FormView):
+class CashReportView(LoginRequiredMixin, FormView):
     """Представление для внесения изменений в кассовых балансах."""
 
     template_name = "cash_report_form.html"
@@ -277,7 +277,7 @@ class CashReportFormView(LoginRequiredMixin, FormView):
         """
         form = self.get_form()
         if form.is_valid():
-            # Сохраняем результаты.
+            print("Попытка сохранить.")
             result = form.save()
             return self.form_valid(form)
         else:
@@ -501,9 +501,13 @@ class ReportSubmittedView(FormView):
                 )
 
                 if cash_report:
+                    print("Обновляем данные перед закрытием.")
+                    result = form.save()
+                    print("Изменяем статус на CLOSED")
                     CashReport.objects.filter(
                         id__in=cash_report.values_list("id")
                     ).update(status=CashReportStatusChoices.CLOSED)
+
                     return redirect(reverse_lazy("saved"))
                 else:
                     # Если статус закрыто, то выводим на страницу 'closed'.

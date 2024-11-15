@@ -19,7 +19,7 @@ from django.urls import path
 from cashbox_app.views import (
     CustomLoginView,
     AddressSelectionView,
-    CashReportFormView,
+    CashReportView,
     ReportSubmittedView,
     KorolevaView,
     CountVisitsView,
@@ -39,7 +39,7 @@ urlpatterns = [
     path(
         "address-selection/", AddressSelectionView.as_view(), name="address_selection"
     ),
-    path("cash-report-form/", CashReportFormView.as_view(), name="cash_report_form"),
+    path("cash-report-form/", CashReportView.as_view(), name="cash_report_form"),
     path("report-submitted/", ReportSubmittedView.as_view(), name="report_submitted"),
     path("cash-report-form/corrected/", CorrectedView.as_view(), name="corrected"),
     path("report-submitted/saved/", SavedView.as_view(), name="saved"),

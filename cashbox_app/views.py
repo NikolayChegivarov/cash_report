@@ -1,5 +1,3 @@
-import pprint
-
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login, authenticate
@@ -8,11 +6,11 @@ from django.shortcuts import render, redirect
 from django.views import View
 from django.views.generic import FormView, TemplateView
 from django.views.decorators.csrf import csrf_protect
-from django.utils.timezone import now
 from django.utils.decorators import method_decorator
+from django.utils.timezone import now
 from django.urls import reverse_lazy, reverse
 from django.db.models import Prefetch
-from django.db.models import F, Case, Value, When
+from django.db.models import Case, Value, When, Func, Subquery, OuterRef, F
 from django.db.models import Count
 from django.db.models import Max
 from django.db.models.fields import CharField
@@ -20,9 +18,6 @@ from django.db.models.functions import (
     ExtractYear,
     ExtractMonth,
     ExtractDay,
-    TruncDate,
-    ExtractHour,
-    ExtractMinute,
     ExtractWeekDay,
 )
 from cashbox_app.forms import (
@@ -42,12 +37,6 @@ from cashbox_app.models import (
     Schedule,
 )
 import pandas as pd
-
-from django.db.models import F, Func, Subquery, OuterRef, Case, Value, CharField
-from django.db.models.functions import TruncDate, ExtractHour, ExtractMinute
-from django.utils.timezone import now
-from datetime import datetime
-from datetime import time
 
 # Увеличиваем максимальное количество отображаемых столбцов в pandas
 pd.set_option("display.max_columns", None)

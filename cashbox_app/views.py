@@ -469,10 +469,6 @@ class ReportSubmittedView(FormView):
         return form
 
     def post(self, request, *args, **kwargs):
-        # print("Все атрибуты request:")
-        # pprint.pprint(request.__dict__)
-        #
-        # print(request.user)
 
         form = self.get_form()
         if form.is_valid():
@@ -501,9 +497,9 @@ class ReportSubmittedView(FormView):
                 )
 
                 if cash_report:
-                    print("Обновляем данные перед закрытием.")
+                    print("Обновляем данные в бд перед закрытием.")
                     result = form.save()
-                    print("Изменяем статус на CLOSED")
+                    print("\nИзменяем статус на CLOSED")
                     CashReport.objects.filter(
                         id__in=cash_report.values_list("id")
                     ).update(status=CashReportStatusChoices.CLOSED)

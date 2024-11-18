@@ -199,7 +199,7 @@ class MultiCashReportForm(forms.Form):
     def save(self):
         shift_date = datetime.now()
         print(f"\n{self.cleaned_data['author']} сохраняет данные. Дата: {shift_date}")
-        print(f"------------------")
+        print(f"-------------------")
 
         try:
             # Проверяем, существуют ли отчеты с такой датой и автором

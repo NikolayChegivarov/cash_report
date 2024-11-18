@@ -10,10 +10,18 @@ from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 from django.urls import reverse_lazy, reverse
 from django.db.models import Prefetch
-from django.db.models import Case, Value, When, Func, Subquery, OuterRef, F
 from django.db.models import Count
 from django.db.models import Max
 from django.db.models.fields import CharField
+from django.db.models import (
+    Case,
+    Value,
+    When,
+    Func,
+    Subquery,
+    OuterRef,
+    F,
+)
 from django.db.models.functions import (
     ExtractYear,
     ExtractMonth,
@@ -37,6 +45,7 @@ from cashbox_app.models import (
     Schedule,
 )
 import pandas as pd
+
 
 # Увеличиваем максимальное количество отображаемых столбцов в pandas
 pd.set_option("display.max_columns", None)
@@ -916,7 +925,8 @@ class ScheduleReportView(TemplateView):
                 )
                 .select_related("id_address")
                 .annotate(
-                    # annotated_shift_date=F("shift_date"),
+                    shift_date_all=F("shift_date"),
+                    updated_at_all=F("updated_at"),
                     date=format_date_expr("shift_date"),
                     opening_time_fact=format_time_expr("shift_date"),
                     closing_time_fact=format_time_expr("updated_at"),
@@ -932,7 +942,8 @@ class ScheduleReportView(TemplateView):
                 .values(
                     "id_address__street",
                     "id_address__home",
-                    # "annotated_shift_date",
+                    "shift_date_all",
+                    "updated_at_all",
                     "date",
                     "opening_time_fact",
                     "closing_time_fact",
@@ -996,7 +1007,7 @@ class CountVisitsView(TemplateView):
 
             print(f"Год,месяц: {year}.{month}")
 
-            # Определяем действие на основе названия кнопки
+            # Определяем действие на основе названия кнопки.
             action = request.POST.get("action", "")
 
             if action == "Краткий отчет":

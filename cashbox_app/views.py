@@ -966,7 +966,11 @@ class ScheduleReportView(TemplateView):
             print(df)
 
             return self.render_to_response(
-                {"schedule_report": schedule_report_with_schedule}
+                {
+                    "schedule_report": schedule_report_with_schedule,
+                    "df": df.to_html(index=False),
+                    "days_of_week": days_of_week,
+                }
             )
 
         return render(request, self.template_name)

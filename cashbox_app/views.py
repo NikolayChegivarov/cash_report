@@ -880,10 +880,12 @@ class ScheduleView(TemplateView):
 
 
 def format_date_expr(date_expr):
+    """Конвертирует время в формат DATE"""
     return Func(date_expr, function="DATE", template="%(function)s(%(expressions)s)")
 
 
 def format_time_expr(date_expr):
+    """Конвертирует время в формат TAME"""
     return Func(
         date_expr, function="TO_CHAR", template="TO_CHAR(%(expressions)s, 'HH24:MI:SS')"
     )

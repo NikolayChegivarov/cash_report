@@ -42,10 +42,10 @@
         <td>{{ row.opening_time_fact|default:'-' }}</td>
         <td>{{ row.closing_time_fact|default:'-' }}</td>
         <td>{{ row.day_of_week }}</td>
-        <!--        <td>{{ row.opening_time|time:"H:i:s" }}</td>-->
-        <!--        <td>{{ row.closing_time|time:"H:i:s" }}</td>-->
-        <td>{% if row.opening_time is not None %}{{ row.opening_time }}{% else %}-{% endif %}</td>
-        <td>{% if row.closing_time is not None %}{{ row.closing_time }}{% else %}-{% endif %}</td>
+        <td>{{ row.opening_time|time:"H:i:s" }}</td>
+        <td>{{ row.closing_time|time:"H:i:s" }}</td>
+        <!--        <td>{% if row.opening_time is not None %}{{ row.opening_time }}{% else %}-{% endif %}</td>-->
+        <!--        <td>{% if row.closing_time is not None %}{{ row.closing_time }}{% else %}-{% endif %}</td>-->
     </tr>
     {% endfor %}
 </table>

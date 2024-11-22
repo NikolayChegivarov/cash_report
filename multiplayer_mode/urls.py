@@ -21,11 +21,11 @@ from cashbox_app.views import (
     AddressSelectionView,
     CashReportView,
     ReportSubmittedView,
-    KorolevaView,
+    SupervisorView,
     CountVisitsView,
     CountVisitsBriefView,
     CountVisitsFullView,
-    KorolevaCashReportView,
+    SupervisorCashReportView,
     CorrectedView,
     SavedView,
     ClosedView,
@@ -44,7 +44,7 @@ urlpatterns = [
     path("cash-report-form/corrected/", CorrectedView.as_view(), name="corrected"),
     path("report-submitted/saved/", SavedView.as_view(), name="saved"),
     path("report-submitted/saved/closed/", ClosedView.as_view(), name="closed"),
-    path("koroleva/", KorolevaView.as_view(), name="koroleva"),
+    path("supervisor/", SupervisorView.as_view(), name="supervisor"),
     path("count_visits/", CountVisitsView.as_view(), name="count_visits"),
     path(
         "count_visits/brief", CountVisitsBriefView.as_view(), name="count_visits_brief"
@@ -52,5 +52,9 @@ urlpatterns = [
     path("schedule", ScheduleView.as_view(), name="schedule"),
     path("schedule/report", ScheduleReportView.as_view(), name="schedule_report"),
     path("count_visits/full", CountVisitsFullView.as_view(), name="count_visits_full"),
-    path("cash_report/", KorolevaCashReportView.as_view(), name="coroleva_cash_report"),
+    path(
+        "cash_report/",
+        SupervisorCashReportView.as_view(),
+        name="supervisor_cash_report",
+    ),
 ]

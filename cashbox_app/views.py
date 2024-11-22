@@ -90,7 +90,7 @@ class CustomLoginView(LoginView):
             print(f"Вошел пользователь: {user_str}")
 
             if user_str == "Руководитель":
-                return redirect(reverse_lazy("koroleva"))
+                return redirect(reverse_lazy("supervisor"))
             else:
                 return redirect(reverse_lazy("address_selection"))
         else:
@@ -824,12 +824,12 @@ class ClosedView(View):
         return render(request, self.template_name)
 
 
-class KorolevaView(TemplateView):
+class SupervisorView(TemplateView):
     """
     Страница выбора отчета для руководителя.
     """
 
-    template_name = "koroleva.html"
+    template_name = "supervisor.html"
 
 
 class ScheduleView(TemplateView):
@@ -1153,7 +1153,7 @@ class CountVisitsFullView(TemplateView):
         return context
 
 
-class KorolevaCashReportView(TemplateView):
+class SupervisorCashReportView(TemplateView):
     """Отчет по кассам."""
 
-    template_name = "coroleva_cash_report.html"
+    template_name = "supervisor_cash_report.html"

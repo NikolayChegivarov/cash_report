@@ -41,7 +41,7 @@ class AddressScheduleAdmin(admin.ModelAdmin):
         "day_of_week",
         "formatted_opening_time",
         "formatted_closing_time",
-        "get_adress_id",
+        "get_full_address",
     )
     list_filter = ["day_of_week"]
 
@@ -55,10 +55,10 @@ class AddressScheduleAdmin(admin.ModelAdmin):
 
     formatted_closing_time.short_description = "Время закрытия"
 
-    def get_adress_id(self, obj):
-        return obj.address.id if obj.address else "-"
+    def get_full_address(self, obj):
+        return obj.address.__str__() if obj.address else "-"
 
-    get_adress_id.short_description = "ID адреса"
+    get_full_address.short_description = "Адрес"
 
 
 # Добавить пользователя.

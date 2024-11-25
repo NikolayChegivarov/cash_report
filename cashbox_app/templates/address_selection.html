@@ -1,8 +1,29 @@
-{% block content %}
+{% load static %}  <!-- Add this line -->
 
+{% block content %}
 <head>
     <meta charset="UTF-8">
     <title>Выбор адреса</title>
+    <style>
+        body {
+            background-image: url('{% static "cashbox_app/address.jpg" %}');
+            background-size: 100% auto;
+            background-repeat: no-repeat;
+            background-position: center;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .content {
+            background-color: rgba(255, 255, 255, 0.8); /* Прозрачный белый фон */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+    </style>
 </head>
 
 <h2>Выберите адрес:</h2>
@@ -14,4 +35,3 @@
 </form>
 
 {% endblock %}
-

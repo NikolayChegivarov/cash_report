@@ -905,13 +905,13 @@ class ScheduleReportView(TemplateView):
             month = session_data["month"]
 
             days_of_week = [
+                "Воскресенье",
                 "Понедельник",
                 "Вторник",
                 "Среда",
                 "Четверг",
                 "Пятница",
                 "Суббота",
-                "Воскресенье",
             ]
 
             schedule_subquery = Schedule.objects.filter(

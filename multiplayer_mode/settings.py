@@ -122,11 +122,13 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
-
 USE_I18N = True
 
-USE_TZ = True
+
+# Что бы время на сервере бралось не из UTC а из 'Europe/Moscow'
+USE_TZ = False
+
+TIME_ZONE = "Europe/Moscow"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [

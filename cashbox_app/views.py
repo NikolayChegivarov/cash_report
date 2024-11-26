@@ -957,7 +957,7 @@ class ScheduleReportView(TemplateView):
             schedule_report_with_schedule = schedule_report.annotate(
                 opening_time=Subquery(schedule_subquery.values("opening_time")[:1]),
                 closing_time=Subquery(schedule_subquery.values("closing_time")[:1]),
-            ).order_by("-date")
+            ).order_by("date")
 
             print("\nSQL запрос:")
             print(schedule_report_with_schedule.query)

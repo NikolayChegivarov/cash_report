@@ -5,7 +5,10 @@
     <title>Кассы</title>
 </head>
 
-<h2>Внесите изменения в кассах:</h2>
+<h2 style="font-size: 18px;">Проверьте баланс в кассах.</h2>
+<h2 style="font-size: 18px;">При необходимости внесите изменения.</h2>
+<h2 style="font-size: 18px;">Нажмите "Начать смену" если баланс сходиться.</h2>
+<h2 style="font-size: 18px;">Если баланс не сходится, сообщите непосредственному руководителю.</h2>
 
 <form method="post">
     {% csrf_token %}
@@ -94,7 +97,7 @@
         {{ form.status }}
     </div>
 
-    <button type="submit">Посмотреть результат</button>
+    <button type="submit">Начать смену</button>
 </form>
 
 

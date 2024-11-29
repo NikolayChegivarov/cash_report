@@ -1,7 +1,6 @@
 {% load static %}
 
 {% block content %}
-
 <head>
     <meta charset="UTF-8">
     <title>Выбор адреса</title>
@@ -18,18 +17,19 @@
             align-items: center;
         }
 
-        .content {
-            background-color: rgba(255, 255, 255, 0.8); /* Прозрачный белый фон */
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        .address-form {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            font-size: 200%; /* Увеличение размера шрифта для всех элементов */
         }
     </style>
 </head>
 
 <h2>Выберите адрес:</h2>
 
-<form method="post">
+<form method="post" class="address-form">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit">Выбрать адрес</button>

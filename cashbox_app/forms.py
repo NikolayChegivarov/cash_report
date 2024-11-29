@@ -38,7 +38,8 @@ class AddressSelectionForm(forms.Form):
     """Форма для выбора адреса."""
 
     addresses = forms.ModelChoiceField(
-        queryset=Address.objects.all(), empty_label="Выберите адрес"
+        queryset=Address.objects.all(),
+        empty_label="Выберите адрес ломбарда",
     )
 
 

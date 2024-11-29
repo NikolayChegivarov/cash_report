@@ -3,35 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <title>Кассы</title>
+
+    <style>
+        table {
+            width: 60%;    /* фиксирую ширину */
+            margin: 0 auto;  /* центрую таблицу */
+        }
+        form {
+          margin-top: 5em;   /* Отделяем информацию */
+        }
+
+        button[type="submit"] {
+        width: 700px; /* Увеличить ширину */
+        height: 200px; /* Увеличить высоту */
+        font-size: 60px; /* Увеличить размер шрифта */
+        padding: 10px 20px; /* Добавить больше отступов */
+        border-radius: 5px; /* Слегка закругленные углы */
+        background-color: #007bff; /* Синий цвет фона */
+        color: white; /* Белый цвет текста */
+        cursor: pointer; /* Изменить форму курсора при наведении */
+        display: block; /* Добавляем эту строку */
+        margin: 40px auto 0; /* Добавляет отступ сверху и центрирует горизонтально */
+<!--        margin: 0 auto; /* Центрируем кнопку */-->
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3; /* Затемнение фона при наведении */
+        }
+
+    </style>
 </head>
 
-<h2 style="font-size: 18px;">Проверьте баланс в кассах.</h2>
-<h2 style="font-size: 18px;">При необходимости внесите изменения.</h2>
-<h2 style="font-size: 18px;">Нажмите "Начать смену" если баланс сходиться.</h2>
-<h2 style="font-size: 18px;">Если баланс не сходится, сообщите непосредственному руководителю.</h2>
+<h2 style="font-size: 18px; margin: 0;">Проверьте баланс в кассах.</h2>
+<h2 style="font-size: 18px; margin: 0;">При необходимости внесите изменения.</h2>
+<h2 style="font-size: 18px; margin: 0;">Нажмите "Начать смену" если баланс сходиться.</h2>
+<h2 style="font-size: 18px; margin: 0;">Если баланс не сходится, сообщите непосредственному руководителю.</h2>
 
 <form method="post">
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ next }}">
-    <div>
-        <label>Сотрудник смены:</label>
-        {{form.author}}
-    </div>
 
-    <div>
-        <label>Адрес:</label>
-        {{form.id_address}}
-    </div>
+    <fieldset>
+        <legend>Информация</legend>
+        <div>
+            <label>Сотрудник смены:</label>
+            {{form.author}}
+        </div>
 
-    <div>
-        <label>Дата:</label>
-        {{form.data}}
-    </div>
+        <div>
+            <label>Адрес:</label>
+            {{form.id_address}}
+        </div>
+
+        <div>
+            <label>Дата:</label>
+            {{form.data}}
+        </div>
+    </fieldset>
 
     <table>
-        <thead>
-
-        </thead>
         <tbody>
 
         <tr>

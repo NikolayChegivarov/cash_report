@@ -5,17 +5,37 @@
     <title>Кассы</title>
 
     <style>
+        form {
+        margin-top: 2em;   /* Отделяем информацию */
+        }
+
         table {
-            width: 60%;    /* фиксирую ширину */
+            width: 70%;    /* фиксирую ширину */
             margin: 0 auto;  /* центрую таблицу */
         }
-        form {
-          margin-top: 5em;   /* Отделяем информацию */
+
+        .balance-table {
+        margin-top: 80px; /* Добавляет отступ сверху перед таблицей */
+<!--         margin: 0 auto; /* Центрируем таблицу */-->
+        border-collapse: separate; /* Разделяем границы ячеек */
+        border-spacing: 0 10px; /* Добавляем отступы между строками */
+        box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Добавляем легкую тень */
+        font-size: 18px; /* Увеличить шрифт таблицы */
+        }
+
+        .balance-table tr:nth-child(even) {
+        background-color: #f9f9f9; /* Альтернативная окраска четных строк */
+        }
+
+        .balance-table th, .balance-table td {
+        padding: 10px; /* Увеличиваем внутренние отступы ячеек */
+        text-align: left; /* Выравниваем текст по левому краю */
+        border-bottom: 1px solid #ccc; /* Добавляем нижнюю границу */
         }
 
         button[type="submit"] {
-        width: 700px; /* Увеличить ширину */
-        height: 200px; /* Увеличить высоту */
+        width: 500px; /* Увеличить ширину */
+        height: 150px; /* Увеличить высоту */
         font-size: 60px; /* Увеличить размер шрифта */
         padding: 10px 20px; /* Добавить больше отступов */
         border-radius: 5px; /* Слегка закругленные углы */
@@ -24,13 +44,11 @@
         cursor: pointer; /* Изменить форму курсора при наведении */
         display: block; /* Добавляем эту строку */
         margin: 40px auto 0; /* Добавляет отступ сверху и центрирует горизонтально */
-<!--        margin: 0 auto; /* Центрируем кнопку */-->
         }
 
         button[type="submit"]:hover {
             background-color: #0056b3; /* Затемнение фона при наведении */
         }
-
     </style>
 </head>
 
@@ -61,7 +79,7 @@
         </div>
     </fieldset>
 
-    <table>
+    <table class="balance-table">
         <tbody>
 
         <tr>

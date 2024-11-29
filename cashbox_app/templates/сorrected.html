@@ -2,27 +2,81 @@
 <head>
     <meta charset="UTF-8">
     <title>Корректировка</title>
+
+    <style>
+        form {
+        margin-top: 2em;   /* Отделяем информацию */
+        }
+
+        table {
+            width: 70%;    /* фиксирую ширину */
+            margin: 0 auto;  /* центрую таблицу */
+        }
+
+        .balance-table {
+        margin-top: 80px; /* Добавляет отступ сверху перед таблицей */
+        border-collapse: separate; /* Разделяем границы ячеек */
+        border-spacing: 0 10px; /* Добавляем отступы между строками */
+        box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Добавляем легкую тень */
+        font-size: 18px; /* Увеличить шрифт таблицы */
+        }
+
+        .balance-table tr:nth-child(even) {
+        background-color: #f9f9f9; /* Альтернативная окраска четных строк */
+        }
+
+        .balance-table th, .balance-table td {
+        padding: 10px; /* Увеличиваем внутренние отступы ячеек */
+        text-align: left; /* Выравниваем текст по левому краю */
+        border-bottom: 1px solid #ccc; /* Добавляем нижнюю границу */
+        }
+
+        button[type="submit"] {
+        display: block; /* элементом блочного уровня */
+        width: 200px; /* Увеличить ширину */
+        height: 50px; /* Увеличить высоту */
+        font-size: 20px; /* Размер шрифта */
+        padding: 10px 20px; /* Добавить больше отступов */
+        border-radius: 5px; /* Слегка закругленные углы */
+        background-color: #007bff; /* Синий цвет фона */
+        color: white; /* Белый цвет текста */
+        cursor: pointer; /* Изменить форму курсора при наведении */
+        margin: 40px auto 0; /* Добавляет отступ сверху и центрирует горизонтально */
+        margin-left: 50px; /* Добавьте это свойство */
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3; /* Затемнение фона при наведении */
+        }
+    </style>
 </head>
+
 <h2>Скорректируйте изменения в кассах:</h2>
+
 <form method="post">
+
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ next }}">
-    <div>
-        <label>Сотрудник смены:</label>
-        {{form.author}}
-    </div>
 
-    <div>
-        <label>Адрес:</label>
-        {{form.id_address}}
-    </div>
+    <fieldset>
+        <legend>Информация</legend>
+        <div>
+            <label>Сотрудник смены:</label>
+            {{form.author}}
+        </div>
 
-    <div>
-        <label>Дата:</label>
-        {{form.data}}
-    </div>
+        <div>
+            <label>Адрес:</label>
+            {{form.id_address}}
+        </div>
 
-    <table>
+        <div>
+            <label>Дата:</label>
+            {{form.data}}
+        </div>
+    </fieldset>
+
+    <table class="balance-table">
         <thead>
 
         </thead>

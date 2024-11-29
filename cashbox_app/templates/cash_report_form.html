@@ -2,7 +2,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Кассы</title>
+    <title>Сверка кассы</title>
 
     <style>
         form {
@@ -16,7 +16,6 @@
 
         .balance-table {
         margin-top: 80px; /* Добавляет отступ сверху перед таблицей */
-<!--         margin: 0 auto; /* Центрируем таблицу */-->
         border-collapse: separate; /* Разделяем границы ячеек */
         border-spacing: 0 10px; /* Добавляем отступы между строками */
         box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Добавляем легкую тень */
@@ -34,6 +33,7 @@
         }
 
         button[type="submit"] {
+        display: block; /* элементом блочного уровня */
         width: 500px; /* Увеличить ширину */
         height: 150px; /* Увеличить высоту */
         font-size: 60px; /* Увеличить размер шрифта */
@@ -42,7 +42,6 @@
         background-color: #007bff; /* Синий цвет фона */
         color: white; /* Белый цвет текста */
         cursor: pointer; /* Изменить форму курсора при наведении */
-        display: block; /* Добавляем эту строку */
         margin: 40px auto 0; /* Добавляет отступ сверху и центрирует горизонтально */
         }
 
@@ -50,6 +49,7 @@
             background-color: #0056b3; /* Затемнение фона при наведении */
         }
     </style>
+
 </head>
 
 <h2 style="font-size: 18px; margin: 0;">Проверьте баланс в кассах.</h2>
@@ -58,6 +58,7 @@
 <h2 style="font-size: 18px; margin: 0;">Если баланс не сходится, сообщите непосредственному руководителю.</h2>
 
 <form method="post">
+
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ next }}">
 

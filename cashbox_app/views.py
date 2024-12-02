@@ -818,6 +818,9 @@ class SavedView(FormView):
 
 
 class ClosedView(View):
+    """Страница указывающая на то что отчет закрыт
+    и дальнейшая корректировка его не возможна."""
+
     template_name = "closed.html"
 
     def get(self, request):

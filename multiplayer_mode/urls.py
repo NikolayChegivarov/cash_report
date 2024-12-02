@@ -34,27 +34,47 @@ from cashbox_app.views import (
 )
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("admin/", admin.site.urls),  # Страница администратора.
     path("login/", CustomLoginView.as_view(), name="login"),
-    path(
+    path(  # Авторизация
         "address-selection/", AddressSelectionView.as_view(), name="address_selection"
-    ),
-    path("cash-report-form/", CashReportView.as_view(), name="cash_report_form"),
-    path("report-submitted/", ReportSubmittedView.as_view(), name="report_submitted"),
-    path("cash-report-form/corrected/", CorrectedView.as_view(), name="corrected"),
-    path("report-submitted/saved/", SavedView.as_view(), name="saved"),
-    path("report-submitted/saved/closed/", ClosedView.as_view(), name="closed"),
-    path("supervisor/", SupervisorView.as_view(), name="supervisor"),
-    path("count_visits/", CountVisitsView.as_view(), name="count_visits"),
+    ),  # Выбор адреса.
+    path(
+        "cash-report-form/", CashReportView.as_view(), name="cash_report_form"
+    ),  # Сверка кассы.
+    path(
+        "report-submitted/", ReportSubmittedView.as_view(), name="report_submitted"
+    ),  # Основная страница сотрудника.
+    path(
+        "cash-report-form/corrected/", CorrectedView.as_view(), name="corrected"
+    ),  # Корректировка.
+    path(
+        "report-submitted/saved/", SavedView.as_view(), name="saved"
+    ),  # Сохраненные данные.
+    path(
+        "report-submitted/saved/closed/", ClosedView.as_view(), name="closed"
+    ),  # Статус закрыто.
+    path(
+        "supervisor/", SupervisorView.as_view(), name="supervisor"
+    ),  # Страница руководителя.
+    path(
+        "count_visits/", CountVisitsView.as_view(), name="count_visits"
+    ),  # Выбор отчета "количество посещений".
     path(
         "count_visits/brief", CountVisitsBriefView.as_view(), name="count_visits_brief"
-    ),
-    path("schedule", ScheduleView.as_view(), name="schedule"),
-    path("schedule/report", ScheduleReportView.as_view(), name="schedule_report"),
-    path("count_visits/full", CountVisitsFullView.as_view(), name="count_visits_full"),
+    ),  # Краткий отчет
+    path(
+        "count_visits/full", CountVisitsFullView.as_view(), name="count_visits_full"
+    ),  # Полный отчет
+    path(
+        "schedule", ScheduleView.as_view(), name="schedule"
+    ),  # Фильтр отчета "расписание".
+    path(
+        "schedule/report", ScheduleReportView.as_view(), name="schedule_report"
+    ),  # Отчет "расписание".
     path(
         "cash_report/",
         SupervisorCashReportView.as_view(),
         name="supervisor_cash_report",
-    ),
+    ),  # Отчет "Кассы"
 ]

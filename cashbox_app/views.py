@@ -45,17 +45,79 @@ from cashbox_app.models import (
     Schedule,
 )
 import pandas as pd
+import logging
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
 # Увеличиваем максимальное количество отображаемых столбцов в pandas
 pd.set_option("display.max_columns", None)
 # Увеличиваем ширину вывода в pandas
 pd.set_option("display.width", 1000)
-import logging
 
-logger = logging.getLogger(__name__)
 
-logging.basicConfig(level=logging.DEBUG)
+def current_balance(address_id):
+    """Функция для получения текущего баланса кассы"""
+    # Создаю словарь с балансами касс.
+    balance = {"buying_up": None, "pawnshop": None, "technique": None}
+
+    # BUYING_UP ORM зарос
+    buying_up_reports_BUYING_UP = (
+        CashReport.objects.filter(
+            cas_register=CashRegisterChoices.BUYING_UP, id_address_id=address_id
+        )
+        .values("cash_register_end")
+        .annotate(last_updated=Max("updated_at"))
+        .order_by("-last_updated")
+        .first()
+    )
+
+    if buying_up_reports_BUYING_UP:
+        # Если результат есть, добавляю его в словарь.
+        balance["buying_up"] = buying_up_reports_BUYING_UP["cash_register_end"]
+        print(f"Текущий баланс BUYING_UP: {balance.get('buying_up')}")
+    else:
+        # Если значения нет. Устанавливаю 0
+        balance["buying_up"] = 0
+        print(f"Отчетов по Скупке для адреса {address_id} не найдено")
+
+    # PAWNSHOP ORM зарос
+    buying_up_reports_PAWNSHOP = (
+        CashReport.objects.filter(
+            cas_register=CashRegisterChoices.PAWNSHOP, id_address_id=address_id
+        )
+        .values("cash_register_end")
+        .annotate(last_updated=Max("updated_at"))
+        .order_by("-last_updated")
+        .first()
+    )
+
+    if buying_up_reports_PAWNSHOP:
+        balance["pawnshop"] = buying_up_reports_PAWNSHOP["cash_register_end"]
+        print(f"Текущий баланс PAWNSHOP: {balance.get('pawnshop')}")
+    else:
+        balance["pawnshop"] = 0
+        print(f"Отчетов по Ломбарду для адреса {address_id} не найдено")
+
+    # TECHNIQUE ORM зарос
+    buying_up_reports_TECHNIQUE = (
+        CashReport.objects.filter(
+            cas_register=CashRegisterChoices.TECHNIQUE, id_address_id=address_id
+        )
+        .values("cash_register_end")
+        .annotate(last_updated=Max("updated_at"))
+        .order_by("-last_updated")
+        .first()
+    )
+
+    if buying_up_reports_TECHNIQUE:
+        balance["technique"] = buying_up_reports_TECHNIQUE["cash_register_end"]
+        print(f"Текущий баланс TECHNIQUE: {balance.get('technique')}")
+    else:
+        balance["technique"] = 0
+        print(f"Отчетов по Технике для адреса {address_id} не найдено")
+
+    return balance
 
 
 class CustomLoginView(LoginView):
@@ -126,72 +188,8 @@ class AddressSelectionView(FormView):
         return self.success_url
 
 
-def current_balance(address_id):
-    """Функция для получения текущего баланса кассы"""
-    # Создаю словарь с балансами касс.
-    balance = {"buying_up": None, "pawnshop": None, "technique": None}
-
-    # BUYING_UP ORM зарос
-    buying_up_reports_BUYING_UP = (
-        CashReport.objects.filter(
-            cas_register=CashRegisterChoices.BUYING_UP, id_address_id=address_id
-        )
-        .values("cash_register_end")
-        .annotate(last_updated=Max("updated_at"))
-        .order_by("-last_updated")
-        .first()
-    )
-
-    if buying_up_reports_BUYING_UP:
-        # Если результат есть, добавляю его в словарь.
-        balance["buying_up"] = buying_up_reports_BUYING_UP["cash_register_end"]
-        print(f"Текущий баланс BUYING_UP: {balance.get('buying_up')}")
-    else:
-        # Если значения нет. Устанавливаю 0
-        balance["buying_up"] = 0
-        print(f"Отчетов по Скупке для адреса {address_id} не найдено")
-
-    # PAWNSHOP ORM зарос
-    buying_up_reports_PAWNSHOP = (
-        CashReport.objects.filter(
-            cas_register=CashRegisterChoices.PAWNSHOP, id_address_id=address_id
-        )
-        .values("cash_register_end")
-        .annotate(last_updated=Max("updated_at"))
-        .order_by("-last_updated")
-        .first()
-    )
-
-    if buying_up_reports_PAWNSHOP:
-        balance["pawnshop"] = buying_up_reports_PAWNSHOP["cash_register_end"]
-        print(f"Текущий баланс PAWNSHOP: {balance.get('pawnshop')}")
-    else:
-        balance["pawnshop"] = 0
-        print(f"Отчетов по Ломбарду для адреса {address_id} не найдено")
-
-    # TECHNIQUE ORM зарос
-    buying_up_reports_TECHNIQUE = (
-        CashReport.objects.filter(
-            cas_register=CashRegisterChoices.TECHNIQUE, id_address_id=address_id
-        )
-        .values("cash_register_end")
-        .annotate(last_updated=Max("updated_at"))
-        .order_by("-last_updated")
-        .first()
-    )
-
-    if buying_up_reports_TECHNIQUE:
-        balance["technique"] = buying_up_reports_TECHNIQUE["cash_register_end"]
-        print(f"Текущий баланс TECHNIQUE: {balance.get('technique')}")
-    else:
-        balance["technique"] = 0
-        print(f"Отчетов по Технике для адреса {address_id} не найдено")
-
-    return balance
-
-
 class CashReportView(LoginRequiredMixin, FormView):
-    """Представление для внесения изменений в кассовых балансах."""
+    """Страница сверки касс."""
 
     template_name = "cash_report_form.html"
     form_class = MultiCashReportForm
@@ -290,7 +288,7 @@ class CashReportView(LoginRequiredMixin, FormView):
 
 class ReportSubmittedView(FormView):
     """
-    Форма с результатом сохранения изменений в балансах касс.
+    Основная страница сотрудника.
     """
 
     template_name = "report_submitted.html"
@@ -982,7 +980,7 @@ class ScheduleReportView(TemplateView):
 
 
 class CountVisitsView(TemplateView):
-    """Фильтрация по дате, выбор версии отчета."""
+    """Фильтрация по дате, выбор версии отчета ."""
 
     template_name = "count_visits.html"
 

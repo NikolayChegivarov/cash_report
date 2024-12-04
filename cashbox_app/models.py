@@ -330,5 +330,5 @@ class SecretRoom(models.Model):
         max_length=15,
         choices=LocationStatusChoices.choices,
         default=LocationStatusChoices.LOCAL,
-        verbose_name="Выдано денег",
+        verbose_name="Статус скупки.",
     )

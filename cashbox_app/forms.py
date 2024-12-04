@@ -8,6 +8,7 @@ from cashbox_app.models import (
     CashReportStatusChoices,
     CashRegisterChoices,
     SecretRoom,
+    GoldStandardChoices,
 )
 
 
@@ -494,9 +495,46 @@ class ScheduleForm(forms.Form):
 
 
 class SecretRoomForm(forms.Form):
-
     author = forms.ModelChoiceField(queryset=CustomUser.objects.all())
     id_address = forms.ModelChoiceField(queryset=Address.objects.all())
     data = forms.CharField(widget=forms.Textarea(attrs={"rows": 1}), required=False)
 
-    fio = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
+    client = forms.CharField(
+        max_length=60,
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Введите ФИО клиента",
+                "maxlength": 60,
+            }
+        ),
+        required=False,
+    )
+    nomenclature = forms.CharField(
+        max_length=60,
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Введите описание изделия.",
+                "maxlength": 60,
+            }
+        ),
+        required=False,
+    )
+    gold_standard = forms.ChoiceField(
+        choices=GoldStandardChoices.choices,
+        widget=forms.Select(attrs={"class": "form-control"}),
+        # initial="gold585",
+    )
+    price = forms.DecimalField(
+        max_digits=10, decimal_places=2, required=False, initial=0.00
+    )
+    weight_clean = forms.DecimalField(
+        max_digits=10, decimal_places=2, required=False, initial=0.00
+    )
+    weight_fact = forms.DecimalField(
+        max_digits=10, decimal_places=2, required=False, initial=0.00
+    )
+    sum = forms.DecimalField(
+        max_digits=10, decimal_places=2, required=False, initial=0.00
+    )

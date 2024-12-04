@@ -308,11 +308,15 @@ class SecretRoom(models.Model):
     """Модель для тайной комнаты."""
 
     shift_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата смены")
-    fio = models.CharField(max_length=50, verbose_name="ФИО")
-    nomenclature = models.CharField(max_length=50, verbose_name="ФИО")
-    GoldStandard = models.CharField(
+    client = models.CharField(
+        max_length=50, verbose_name="Клиент", default="Новый клиент"
+    )
+    nomenclature = models.CharField(max_length=50, verbose_name="Наименование")
+    gold_standard = models.CharField(
         max_length=15,
         choices=GoldStandardChoices.choices,
+        verbose_name="Проба",
+        default="gold585",
     )
     price = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="Цена за грамм."
@@ -331,4 +335,11 @@ class SecretRoom(models.Model):
         choices=LocationStatusChoices.choices,
         default=LocationStatusChoices.LOCAL,
         verbose_name="Статус скупки.",
+    )
+    author = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        verbose_name="Сотрудник смены",
+        blank=False,
+        null=True,
     )

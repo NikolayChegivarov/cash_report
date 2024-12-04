@@ -31,6 +31,7 @@ from cashbox_app.views import (
     ClosedView,
     ScheduleView,
     ScheduleReportView,
+    SecretRoomView,
 )
 
 urlpatterns = [
@@ -77,4 +78,9 @@ urlpatterns = [
         SupervisorCashReportView.as_view(),
         name="supervisor_cash_report",
     ),  # Отчет "Кассы"
+    path(
+        "secret_room/",
+        SecretRoomView.as_view(),
+        name="secret_room",
+    ),  # Тайная комната
 ]

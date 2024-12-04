@@ -7,6 +7,7 @@ from cashbox_app.models import (
     CustomUser,
     CashReportStatusChoices,
     CashRegisterChoices,
+    SecretRoom,
 )
 
 
@@ -60,52 +61,71 @@ def calculate_cash_register_end(self, cleaned_data, register_type):
     cleaned_data[f"cash_register_end_{register_type}"] = round(total, 2)
 
 
-class CashReportForm(forms.ModelForm):
-    """Форма для внесения изменений в кассовых балансах."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["cas_register"].widget.attrs["onclick"] = "this.checked=true;"
-
-    class Meta:
-        model = CashReport
-        fields = [
-            "author",
-            "id_address",
-            "cas_register",
-            "cash_balance_beginning",
-            "introduced",
-            "interest_return",
-            "loans_issued",
-            "used_farming",
-            "boss_took_it",
-            "cash_register_end",
-            "status",
-        ]
-        widgets = {
-            "id_address": forms.Select(attrs={"readonly": "readonly"}),
-            "author": forms.TextInput(attrs={"readonly": "readonly"}),
-        }
-
-    def clean(self):
-        cleaned_data = super().clean()
-
-        # Проверяем, что все обязательные поля заполнены
-        required_fields = ["author", "id_address", "cas_register"]
-        for field_name in required_fields:
-            if not cleaned_data.get(field_name):
-                raise forms.ValidationError(
-                    f"Обязательное поле '{field_name}' не заполнено."
-                )
-
-        # Остальная часть валидации...
-        for field_name in self.fields.keys():
-            if not cleaned_data.get(field_name):
-                raise forms.ValidationError(
-                    f"Поле '{field_name}' не должно быть пустым."
-                )
-
-        return cleaned_data
+# class CashReportForm(forms.ModelForm):
+#     """Форма для внесения изменений в кассовых балансах."""
+#
+#     def __init__(self, *args, **kwargs):
+#         """Добавляем обработку для поля cas_register."""
+#         super().__init__(*args, **kwargs)
+#         self.fields["cas_register"].widget.attrs["onclick"] = "this.checked=true;"
+#
+#     class Meta:
+#         model = CashReport
+#         fields = [
+#             "author",
+#             "id_address",
+#             "cas_register",
+#             "cash_balance_beginning",
+#             "introduced",
+#             "interest_return",
+#             "loans_issued",
+#             "used_farming",
+#             "boss_took_it",
+#             "cash_register_end",
+#             "status",
+#         ]
+#         widgets = {
+#             "id_address": forms.Select(attrs={"readonly": "readonly"}),
+#             "author": forms.TextInput(attrs={"readonly": "readonly"}),
+#         }
+#
+#     def clean(self):
+#         """
+#         Метод очистки данных формы.
+#
+#         Этот метод выполняет дополнительную валидацию данных формы после стандартной валидации,
+#         предоставляемой базовым классом forms.Form или его подклассами.
+#
+#         Основные функции метода:
+#
+#         1. Вызывает метод clean() родительского класса для выполнения стандартной валидации.
+#         2. Проверяет наличие значений для обязательных полей.
+#         3. Проверяет наличие значений для всех полей формы.
+#         4. Возвращает очищенные данные, если они проходят проверку.
+#
+#         При обнаружении отсутствующих значений для обязательных полей или пустых полей
+#         вызывается исключение ValidationError с соответствующим сообщением об ошибке.
+#
+#         :return: Очищенные данные формы (словарь)
+#         """
+#         cleaned_data = super().clean()
+#
+#         # Проверяем, что все обязательные поля заполнены
+#         required_fields = ["author", "id_address", "cas_register"]
+#         for field_name in required_fields:
+#             if not cleaned_data.get(field_name):
+#                 raise forms.ValidationError(
+#                     f"Обязательное поле '{field_name}' не заполнено."
+#                 )
+#
+#         # Остальная часть валидации...
+#         for field_name in self.fields.keys():
+#             if not cleaned_data.get(field_name):
+#                 raise forms.ValidationError(
+#                     f"Поле '{field_name}' не должно быть пустым."
+#                 )
+#
+#         return cleaned_data
 
 
 class MultiCashReportForm(forms.Form):
@@ -471,3 +491,12 @@ class ScheduleForm(forms.Form):
 
     class Meta:
         fields = ["addresses", "year", "month"]
+
+
+class SecretRoomForm(forms.Form):
+
+    author = forms.ModelChoiceField(queryset=CustomUser.objects.all())
+    id_address = forms.ModelChoiceField(queryset=Address.objects.all())
+    data = forms.CharField(widget=forms.Textarea(attrs={"rows": 1}), required=False)
+
+    fio = forms.DecimalField(max_digits=10, decimal_places=2, required=False)

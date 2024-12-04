@@ -35,6 +35,7 @@ from cashbox_app.forms import (
     MultiCashReportForm,
     YearMonthForm,
     ScheduleForm,
+    SecretRoomForm,
 )
 from cashbox_app.models import (
     Address,
@@ -504,6 +505,9 @@ class ReportSubmittedView(FormView):
                 else:
                     # Если статус закрыто, то выводим на страницу 'closed'.
                     return redirect(reverse_lazy("closed"))
+
+            elif submit_button == "Самоуничтожение":
+                return redirect(reverse_lazy("secret_room"))
 
         return self.render_to_response(self.get_context_data(form=form))
 
@@ -1154,7 +1158,61 @@ class CountVisitsFullView(TemplateView):
         return context
 
 
-class SupervisorCashReportView(TemplateView):
+class SupervisorCashReportView(TemplateView):  # Не доделан.
     """Отчет по кассам."""
 
     template_name = "supervisor_cash_report.html"
+
+
+class SecretRoomView(FormView):
+    """Тайная комната."""
+
+    print("SecretRoomView!!!")
+
+    template_name = "secret_room.html"
+
+    form_class = SecretRoomForm
+
+    def get_initial(self):
+        """
+        Функция для получения начальных значений данных формы.
+        Возвращает словарь с начальными значениями полей формы,
+        включая выбранный адрес и автора (текущего пользователя).
+        """
+        print("get_initial")
+        initial = {}
+        selected_address_id = self.request.session.get("selected_address_id")
+        if selected_address_id:
+            initial["id_address"] = Address.objects.get(id=selected_address_id)
+        initial["author"] = self.request.user
+        print(self.request.user)
+
+        return initial
+
+    def get_form(self, form_class=None):
+        print("get_form")
+        """
+        Конфигурирует форму, отключая поля, которые не должны быть изменены.
+        """
+        # Получает экземпляр формы из родительского класса
+        form = super().get_form(form_class)
+
+        # Адрес для формы из сессии пользователя.
+        selected_address_id = self.request.session.get("selected_address_id")
+        if selected_address_id:
+            form.fields["id_address"].queryset = Address.objects.filter(
+                id=selected_address_id
+            )
+        else:
+            form.fields["id_address"].queryset = Address.objects.all()[:1]
+
+        address_id = selected_address_id
+
+        # Устанавливаю значения для полей.
+        form.initial["data"] = now().strftime("%Y-%m-%d")
+
+        # Отключаю поля для редактирования
+        form.fields["id_address"].disabled = True
+        form.fields["author"].disabled = True
+
+        return form

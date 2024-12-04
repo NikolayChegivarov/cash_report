@@ -20,7 +20,7 @@ class Address(models.Model):
         ordering = ["city", "street", "home"]
 
 
-DAYS_OF_WEEK = [
+DAYS_OF_WEEK = [  # Наименование дней недели.
     ("monday", "Понедельник"),
     ("tuesday", "Вторник"),
     ("wednesday", "Среда"),
@@ -32,6 +32,8 @@ DAYS_OF_WEEK = [
 
 
 class Schedule(models.Model):
+    """Модель для адресов."""
+
     address = models.ForeignKey(
         Address,
         on_delete=models.CASCADE,
@@ -141,7 +143,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return self.username
 
 
-class CashRegisterChoices(models.TextChoices):  # Разновидность кассы.
+class CashRegisterChoices(models.TextChoices):
     """Варианты кассовых аппаратов."""
 
     BUYING_UP = "BUYING_UP", "Скупка"
@@ -149,7 +151,7 @@ class CashRegisterChoices(models.TextChoices):  # Разновидность к�
     TECHNIQUE = "TECHNIQUE", "Техника"
 
 
-class CashReportStatusChoices(models.TextChoices):  # Статусы отчета.
+class CashReportStatusChoices(models.TextChoices):
     """Статусы кассового отчета."""
 
     OPEN = "OPEN", "Открыто"
@@ -269,3 +271,63 @@ class CashReport(models.Model):
             f"status: {self.status}",
         ]
         return "\n".join(fields)
+
+
+class GoldStandardChoices(models.TextChoices):
+    """Разновидность пробы."""
+
+    gold750 = "750gold", "750gold"
+    goldN585 = "585goldN", "Не стандарт"
+    gold585 = "585gold", "585gold"
+    gold500 = "500gold", "500gold"
+    gold375 = "375gold", "375gold"
+    silvers925 = "925silvers", "925silvers"
+    silvers875 = "875silvers", "875silvers"
+
+
+class GoldStandard(models.Model):
+    """Цена на металл."""
+
+    shift_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата смены")
+    gold_standard = models.CharField(
+        max_length=10,
+        choices=GoldStandardChoices.choices,
+    )
+    price_rubles = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name="Цена в рублях"
+    )
+
+
+class LocationStatusChoices(models.TextChoices):
+    LOCAL = "LOCAL", "В ФИЛИАЛЕ"
+    GATHER = "GATHER", "СОБРАНО"
+    ISSUED = "ISSUED", "ВЫДАНО"
+
+
+class SecretRoom(models.Model):
+    """Модель для тайной комнаты."""
+
+    shift_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата смены")
+    fio = models.CharField(max_length=50, verbose_name="ФИО")
+    nomenclature = models.CharField(max_length=50, verbose_name="ФИО")
+    GoldStandard = models.CharField(
+        max_length=15,
+        choices=GoldStandardChoices.choices,
+    )
+    price = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name="Цена за грамм."
+    )
+    weight_clean = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name="Чистый вес"
+    )
+    weight_fact = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name="Фактический вес"
+    )
+    sum = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name="Выдано денег"
+    )
+    status = models.GoldStandard = models.CharField(
+        max_length=15,
+        choices=LocationStatusChoices.choices,
+        default=LocationStatusChoices.LOCAL,
+    )

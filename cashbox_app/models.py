@@ -297,6 +297,9 @@ class GoldStandard(models.Model):
         max_digits=10, decimal_places=2, verbose_name="Цена в рублях"
     )
 
+    # class Meta:
+    #     db_table = "goldstandard"  # Задаю название в бд
+
 
 class LocationStatusChoices(models.TextChoices):
     LOCAL = "LOCAL", "В ФИЛИАЛЕ"
@@ -309,17 +312,17 @@ class SecretRoom(models.Model):
 
     shift_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата смены")
     client = models.CharField(
-        max_length=50, verbose_name="Клиент", default="Новый клиент"
+        max_length=50, default="Новый клиент", verbose_name="Клиент"
     )
     nomenclature = models.CharField(max_length=50, verbose_name="Наименование")
     gold_standard = models.CharField(
         max_length=15,
         choices=GoldStandardChoices.choices,
-        verbose_name="Проба",
         default="gold585",
+        verbose_name="Проба",
     )
     price = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name="Цена за грамм."
+        max_digits=10, decimal_places=2, verbose_name="Цена за грамм"
     )
     weight_clean = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="Чистый вес"
@@ -334,7 +337,7 @@ class SecretRoom(models.Model):
         max_length=15,
         choices=LocationStatusChoices.choices,
         default=LocationStatusChoices.LOCAL,
-        verbose_name="Статус скупки.",
+        verbose_name="Статус скупки",
     )
     author = models.ForeignKey(
         CustomUser,

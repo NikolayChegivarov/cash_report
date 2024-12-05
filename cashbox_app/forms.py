@@ -24,7 +24,7 @@ class CustomAuthenticationForm(AuthenticationForm):
 
     class Meta:
         model = CustomUser
-        fields = ["username", "password"]
+        fields = ["username", "пароль"]
 
 
 class AddressForm(forms.ModelForm):
@@ -42,6 +42,7 @@ class AddressSelectionForm(forms.Form):
     addresses = forms.ModelChoiceField(
         queryset=Address.objects.all(),
         empty_label="Выберите адрес ломбарда",
+        label="Адреса",
     )
 
 
@@ -492,6 +493,18 @@ class ScheduleForm(forms.Form):
 
     class Meta:
         fields = ["addresses", "year", "month"]
+
+
+class PriceChangesForm(forms.Form):
+    """Форма для ввода цен на пробы."""
+
+    gold_standard = forms.ChoiceField(
+        label="Разновидность пробы",
+        choices=GoldStandardChoices.choices,
+        widget=forms.Select(attrs={"class": "gold-standard-select"}),
+    )
+
+    pass
 
 
 class SecretRoomForm(forms.Form):

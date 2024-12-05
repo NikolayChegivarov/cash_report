@@ -36,6 +36,7 @@ from cashbox_app.forms import (
     YearMonthForm,
     ScheduleForm,
     SecretRoomForm,
+    PriceChangesForm,
 )
 from cashbox_app.models import (
     Address,
@@ -984,7 +985,7 @@ class ScheduleReportView(TemplateView):
 
 
 class CountVisitsView(TemplateView):
-    """Фильтрация по дате, выбор версии отчета ."""
+    """Фильтрация по дате, выбор версии отчета."""
 
     template_name = "count_visits.html"
 
@@ -1164,10 +1165,17 @@ class SupervisorCashReportView(TemplateView):  # Не доделан.
     template_name = "supervisor_cash_report.html"
 
 
+class PriceChangesView(FormView):
+    """Страница изменения цен."""
+
+    template_name = "price_changes.html"
+    form_class = PriceChangesForm
+
+    pass
+
+
 class SecretRoomView(FormView):
     """Тайная комната."""
-
-    print("SecretRoomView!!!")
 
     template_name = "secret_room.html"
 

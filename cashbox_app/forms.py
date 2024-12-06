@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
-from django.utils.timezone import timezone
+from decimal import Decimal
+from django.shortcuts import render
 from cashbox_app.models import (
     Address,
     CashReport,
@@ -503,10 +504,6 @@ class ScheduleForm(forms.Form):
         fields = ["addresses", "year", "month"]
 
 
-from django.core.exceptions import ValidationError
-from decimal import Decimal
-
-
 class PriceChangesForm(forms.Form):
     """Форма для ввода цен на пробы."""
 
@@ -560,6 +557,13 @@ class PriceChangesForm(forms.Form):
         label="золото 875",
     )
 
+    # def price_changes(request):
+    #     tabl = GoldStandard.objects.all()
+    #     form = PriceChangesForm()
+    #
+    #     context = {"tabl": tabl, "form": form}
+    #     return render(request, "price_changes.html", context)
+
     def save(self):
         print(f"self.cleaned_data: {self.cleaned_data}")
         print("Введенные данные:")
@@ -574,48 +578,6 @@ class PriceChangesForm(forms.Form):
                     print(f"Saved record for {field_name}: {value}")
                 except Exception as e:
                     print(f"Failed to save record for {field_name}: {e}")
-
-    # class Meta:
-    #     model = GoldStandard
-    #     fields = ["gold_standard", "price_rubles"]
-    #
-    # def save(self, commit=True):
-    #     instance = super().save(commit=False)
-    #
-    #     if not instance.pk:
-    #         instance.shift_date = timezone.now()
-    #
-    #     fields_to_update = {
-    #         "goldN585": "gold_standard",
-    #         "gold585": "gold_standard",
-    #         "gold500": "gold_standard",
-    #         "gold375": "gold_standard",
-    #         "silvers925": "gold_standard",
-    #         "silvers875": "gold_standard",
-    #     }
-    #
-    #     for field_name, model_field in fields_to_update.items():
-    #         value = self.cleaned_data.get(field_name)
-    #         if value is not None:
-    #             setattr(instance, model_field, value)
-    #
-    #     if commit:
-    #         instance.save()
-    #
-    #     return instance
-
-    # gold750 = forms.ChoiceField(
-    #     label="750gold",
-    #     choices=GoldStandardChoices.choices,
-    #     widget=forms.Select(attrs={"class": "gold-standard-select"}),
-    #     initial="750gold",
-    # )
-    # gold375 = forms.ChoiceField(
-    #     label="375gold",
-    #     choices=GoldStandardChoices.choices,
-    #     widget=forms.Select(attrs={"class": "gold-standard-select"}),
-    #     initial="375gold",
-    # )
 
 
 class SecretRoomForm(forms.Form):

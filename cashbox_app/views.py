@@ -845,7 +845,6 @@ class ScheduleView(TemplateView):
     Страница фильтра отчета соблюдения расписания.
     """
 
-    print("Страница фильтра отчета соблюдения расписания.")
     template_name = "schedule.html"
     form_class = ScheduleForm
 
@@ -1173,23 +1172,21 @@ class PriceChangesView(FormView):
     form_class = PriceChangesForm
     success_url = reverse_lazy("price_changes")
 
-    def post(self, request, *args, **kwargs):
-        """
-        Этот метод обрабатывает отправку формы на сервер.
-        Он проверяет валидность формы, если форма валидна, то сохраняет данные и возвращает успешный ответ.
-        Если форма невалидна, то выводит ошибки и возвращает ответ о некорректности данных.
-        """
-        form = self.get_form()
-        if form.is_valid():
-            print("Попытка сохранить.")
-            result = form.save()
-            return self.form_valid(form)
-        else:
-            print("Форма невалидна:", form.errors)
-            return self.form_invalid(form)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tabl"] = GoldStandard.objects.all()
+        return context
 
-    def get_initial(self):
-        return {"gold375": "375gold", "gold750": "750gold"}
+    def form_valid(self, form):
+        # This method will be called if the form is valid
+        result = form.save()
+        print("Попытка сохранить.")
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        # This method will be called if the form is invalid
+        print("Форма невалидна:", form.errors)
+        return super().form_invalid(form)
 
 
 class SecretRoomView(FormView):

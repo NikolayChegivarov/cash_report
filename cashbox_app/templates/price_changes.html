@@ -5,13 +5,14 @@
     <meta charset="UTF-8">
     <title>Изменение цен</title>
 </head>
-
 <body>
 <h1>Здесь можно изменить цены.</h1>
+<form method="post" class="PriceChanges">
 
+    {% csrf_token %}
+    {{ form.as_p }}
 
-<button onclick="window.location.href='{% url '____' %}'">Сохранить цены</button>
-
-
+    <button onclick="window.location.href='{% url 'price_changes' %}'">Сохранить цены</button>
+</form>
 </body>
 </html>

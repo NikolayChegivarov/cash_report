@@ -1,7 +1,7 @@
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login, authenticate
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import render, redirect
 from django.views import View
 from django.views.generic import FormView, TemplateView
@@ -45,6 +45,8 @@ from cashbox_app.models import (
     CashReportStatusChoices,
     CustomUser,
     Schedule,
+    GoldStandard,
+    GoldStandardChoices,
 )
 import pandas as pd
 import logging
@@ -843,6 +845,7 @@ class ScheduleView(TemplateView):
     Страница фильтра отчета соблюдения расписания.
     """
 
+    print("Страница фильтра отчета соблюдения расписания.")
     template_name = "schedule.html"
     form_class = ScheduleForm
 
@@ -1166,12 +1169,27 @@ class SupervisorCashReportView(TemplateView):  # Не доделан.
 
 
 class PriceChangesView(FormView):
-    """Страница изменения цен."""
-
     template_name = "price_changes.html"
     form_class = PriceChangesForm
+    success_url = reverse_lazy("price_changes")
 
-    pass
+    def post(self, request, *args, **kwargs):
+        """
+        Этот метод обрабатывает отправку формы на сервер.
+        Он проверяет валидность формы, если форма валидна, то сохраняет данные и возвращает успешный ответ.
+        Если форма невалидна, то выводит ошибки и возвращает ответ о некорректности данных.
+        """
+        form = self.get_form()
+        if form.is_valid():
+            print("Попытка сохранить.")
+            result = form.save()
+            return self.form_valid(form)
+        else:
+            print("Форма невалидна:", form.errors)
+            return self.form_invalid(form)
+
+    def get_initial(self):
+        return {"gold375": "375gold", "gold750": "750gold"}
 
 
 class SecretRoomView(FormView):

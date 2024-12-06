@@ -37,8 +37,8 @@ from cashbox_app.views import (
 
 urlpatterns = [
     path("admin/", admin.site.urls),  # Страница администратора.
-    path("login/", CustomLoginView.as_view(), name="login"),
-    path(  # Авторизация
+    path("login/", CustomLoginView.as_view(), name="login"),  # Авторизация.
+    path(
         "address-selection/", AddressSelectionView.as_view(), name="address_selection"
     ),  # Выбор адреса.
     path(
@@ -80,7 +80,7 @@ urlpatterns = [
         name="supervisor_cash_report",
     ),  # Отчет "Кассы"
     path(
-        "price_changes/",
+        "price_changes",
         PriceChangesView.as_view(),
         name="price_changes",
     ),  # Изменение цен

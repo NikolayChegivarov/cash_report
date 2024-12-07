@@ -504,9 +504,6 @@ class ScheduleForm(forms.Form):
         fields = ["addresses", "year", "month"]
 
 
-# from django.db.models import OuterRef, Subquery, F
-
-
 def price_changes():
     gold_standard = {
         "gold750": None,
@@ -517,21 +514,14 @@ def price_changes():
         "silvers925": None,
         "silvers875": None,
     }
-    gold750 = GoldStandard.objects.filter(gold_standard="gold750")
-    goldN585 = GoldStandard.objects.filter(gold_standard="goldN585")
-    gold585 = GoldStandard.objects.filter(gold_standard="gold585")
-    gold500 = GoldStandard.objects.filter(gold_standard="gold500")
-    gold375 = GoldStandard.objects.filter(gold_standard="gold375")
-    silvers925 = GoldStandard.objects.filter(gold_standard="silvers925")
-    silvers875 = GoldStandard.objects.filter(gold_standard="silvers875")
 
     for standard_type in gold_standard.keys():
         obj_list = GoldStandard.objects.filter(gold_standard=standard_type).order_by(
-            "-shift_date"
+            "shift_date"
         )
 
         if obj_list:
-            latest_obj = obj_list.first()
+            latest_obj = obj_list.last()
             gold_standard[standard_type] = latest_obj.price_rubles
 
     return gold_standard

@@ -1173,18 +1173,19 @@ class PriceChangesView(FormView):
     success_url = reverse_lazy("price_changes")
 
     def get_context_data(self, **kwargs):
+        # Добавляю к контексту формы информацию из таблицы для вывода.
         context = super().get_context_data(**kwargs)
         context["tabl"] = GoldStandard.objects.all()
         return context
 
     def form_valid(self, form):
-        # This method will be called if the form is valid
+        # Этот метод будет вызван, если форма действительна.
         result = form.save()
         print("Попытка сохранить.")
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        # This method will be called if the form is invalid
+        # Этот метод будет вызван, если форма недействительна.
         print("Форма невалидна:", form.errors)
         return super().form_invalid(form)
 

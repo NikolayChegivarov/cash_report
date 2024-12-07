@@ -504,65 +504,94 @@ class ScheduleForm(forms.Form):
         fields = ["addresses", "year", "month"]
 
 
+# from django.db.models import OuterRef, Subquery, F
+
+
+def price_changes():
+    gold_standard = {
+        "gold750": None,
+        "goldN585": None,
+        "gold585": None,
+        "gold500": None,
+        "gold375": None,
+        "silvers925": None,
+        "silvers875": None,
+    }
+    gold750 = GoldStandard.objects.filter(gold_standard="gold750")
+    goldN585 = GoldStandard.objects.filter(gold_standard="goldN585")
+    gold585 = GoldStandard.objects.filter(gold_standard="gold585")
+    gold500 = GoldStandard.objects.filter(gold_standard="gold500")
+    gold375 = GoldStandard.objects.filter(gold_standard="gold375")
+    silvers925 = GoldStandard.objects.filter(gold_standard="silvers925")
+    silvers875 = GoldStandard.objects.filter(gold_standard="silvers875")
+
+    for standard_type in gold_standard.keys():
+        obj_list = GoldStandard.objects.filter(gold_standard=standard_type).order_by(
+            "-shift_date"
+        )
+
+        if obj_list:
+            latest_obj = obj_list.first()
+            gold_standard[standard_type] = latest_obj.price_rubles
+
+    return gold_standard
+
+
 class PriceChangesForm(forms.Form):
     """Форма для ввода цен на пробы."""
+
+    gold_standard_ = price_changes()
+    print(f"gold_standard {gold_standard_}")
 
     price_gold750 = forms.DecimalField(
         max_digits=10,
         decimal_places=2,
         required=False,
-        initial=0.00,
+        initial=gold_standard_["gold750"],
         label="золото 750",
     )
     price_goldN585 = forms.DecimalField(
         max_digits=10,
         decimal_places=2,
         required=False,
-        initial=0.00,
+        initial=gold_standard_["goldN585"],
         label="Не стандарт",
     )
     price_gold585 = forms.DecimalField(
         max_digits=10,
         decimal_places=2,
         required=False,
-        initial=0.00,
+        initial=gold_standard_["gold585"],
         label="золото 585",
     )
     price_gold500 = forms.DecimalField(
         max_digits=10,
         decimal_places=2,
         required=False,
-        initial=0.00,
+        initial=gold_standard_["gold500"],
         label="золото 500",
     )
     price_gold375 = forms.DecimalField(
         max_digits=10,
         decimal_places=2,
         required=False,
-        initial=0.00,
+        initial=gold_standard_["gold375"],
         label="золото 375",
     )
     price_silvers925 = forms.DecimalField(
         max_digits=10,
         decimal_places=2,
         required=False,
-        initial=0.00,
-        label="золото 925",
+        initial=gold_standard_["silvers925"],
+        label="серебро 925",
     )
     price_silvers875 = forms.DecimalField(
         max_digits=10,
         decimal_places=2,
         required=False,
-        initial=0.00,
-        label="золото 875",
+        initial=gold_standard_["silvers875"],
+        label="серебро 875",
     )
-
-    # def price_changes(request):
-    #     tabl = GoldStandard.objects.all()
-    #     form = PriceChangesForm()
-    #
-    #     context = {"tabl": tabl, "form": form}
-    #     return render(request, "price_changes.html", context)
 
     def save(self):
         print(f"self.cleaned_data: {self.cleaned_data}")

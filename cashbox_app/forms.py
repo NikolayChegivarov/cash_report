@@ -3,6 +3,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from decimal import Decimal
 from django.shortcuts import render
+from django.utils.timezone import now
 from cashbox_app.models import (
     Address,
     CashReport,
@@ -505,6 +506,22 @@ class ScheduleForm(forms.Form):
 
 
 def price_changes():
+    """
+    Функция для получения цен на лом ювелирных изделий в разрезе проб.
+
+    Возвращает словарь, где ключами являются пробы (например, "gold750", "silver925"), а значениями -
+     актуальные цены в рублях на эти стандарты.
+
+    Функция выполняет следующие действия:
+    1. Создает словарь с базовыми типами стандартов и значением None для каждой из них.
+    2. Для каждого типа стандарта:
+       - Получает QuerySet объектов GoldStandard, отсортированных по дате изменения.
+       - Если QuerySet не пуст, берет последний объект и сохраняет его цену в словаре.
+    3. Возвращает заполненный словарь с ценами.
+
+    :return: dict
+        Словарь, где ключи - пробы, значения - актуальные цены.
+    """
     gold_standard = {
         "gold750": None,
         "goldN585": None,
@@ -528,7 +545,26 @@ def price_changes():
 
 
 class PriceChangesForm(forms.Form):
-    """Форма для ввода цен на пробы."""
+    """
+    PriceChangesForm - класс для создания формы ввода цен на ювелирные изделия б/у.
+
+    Форма содержит поля для ввода цен на лом в разрезе проб.
+    Поля заполняются данными из функции price_changes(), которая получает актуальные цены.
+
+    Структура класса:
+    1. Инициализация данных формы через вызов функции price_changes()
+    2. Создание полей формы для каждого типа стандарта (золото 750, 585, 500, 375,
+       серебро 925, 875) с использованием DecimalField
+    3. Метод save() для обработки сохранения измененных данных формы
+
+    Метод save():
+    - Принимает данные формы после ее отправки
+    - Итерирует по полям формы
+    - Если значение поля отличается от начального значения:
+      - Создает новый объект GoldStandard или обновляет существующий
+      - Сохраняет обновленные данные в базу данных
+      - Добавляет информацию о том, было ли поле изменено или добавлено новый объект
+    """
 
     gold_standard_ = price_changes()
     print(f"gold_standard: {gold_standard_}")
@@ -587,27 +623,28 @@ class PriceChangesForm(forms.Form):
         print(f"self.cleaned_data: {self.cleaned_data}")
         print("Введенные данные:")
 
-        # Dictionary to store updated objects
+        # Словарь для хранения обновленных объектов.
         updated_objects = {}
 
-        # Iterate over each field in cleaned_data
+        # Итерация по каждому полю в cleaning_data.
         for field_name, value in self.cleaned_data.items():
             if value != 0.00:
-                # Check if the field has been changed
+                # Проверяем, было ли изменено поле.
                 initial_value = getattr(self.fields[field_name], "initial", None)
                 if initial_value != value:
                     gold_standard = GoldStandard()
                     try:
-                        gold_standard.shift_date = datetime.now()
+                        gold_standard.shift_date = now()
                         gold_standard.gold_standard = field_name.split("_")[1]
                         gold_standard.price_rubles = Decimal(value)
 
-                        # Update only if object exists
+                        # Обновлять только если объект существует.
                         obj = GoldStandard.objects.filter(
                             gold_standard=field_name.split("_")[1]
                         ).first()
                         if obj:
                             obj.price_rubles = Decimal(value)
+                            obj.shift_date = now()  # Обновить shift_date.
                             obj.save()
                             updated_objects[field_name] = f"{value} (Updated)"
                         else:
@@ -616,7 +653,7 @@ class PriceChangesForm(forms.Form):
                     except Exception as e:
                         print(f"Failed to save record for {field_name}: {e}")
 
-        # Print updated objects
+        # Распечатать обновленные объекты.
         for field, status in updated_objects.items():
             print(f"{field}: {status}")
 

@@ -586,17 +586,39 @@ class PriceChangesForm(forms.Form):
     def save(self):
         print(f"self.cleaned_data: {self.cleaned_data}")
         print("Введенные данные:")
+
+        # Dictionary to store updated objects
+        updated_objects = {}
+
+        # Iterate over each field in cleaned_data
         for field_name, value in self.cleaned_data.items():
             if value != 0.00:
-                gold_standard = GoldStandard()
-                gold_standard.shift_date = datetime.now()
-                gold_standard.gold_standard = field_name.split("_")[1]
-                gold_standard.price_rubles = Decimal(value)
-                try:
-                    gold_standard.save()
-                    print(f"Saved record for {field_name}: {value}")
-                except Exception as e:
-                    print(f"Failed to save record for {field_name}: {e}")
+                # Check if the field has been changed
+                initial_value = getattr(self.fields[field_name], "initial", None)
+                if initial_value != value:
+                    gold_standard = GoldStandard()
+                    try:
+                        gold_standard.shift_date = datetime.now()
+                        gold_standard.gold_standard = field_name.split("_")[1]
+                        gold_standard.price_rubles = Decimal(value)
+
+                        # Update only if object exists
+                        obj = GoldStandard.objects.filter(
+                            gold_standard=field_name.split("_")[1]
+                        ).first()
+                        if obj:
+                            obj.price_rubles = Decimal(value)
+                            obj.save()
+                            updated_objects[field_name] = f"{value} (Updated)"
+                        else:
+                            gold_standard.save()
+                            updated_objects[field_name] = f"{value} (New)"
+                    except Exception as e:
+                        print(f"Failed to save record for {field_name}: {e}")
+
+        # Print updated objects
+        for field, status in updated_objects.items():
+            print(f"{field}: {status}")
 
 
 class SecretRoomForm(forms.Form):

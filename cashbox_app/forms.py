@@ -531,7 +531,7 @@ class PriceChangesForm(forms.Form):
     """Форма для ввода цен на пробы."""
 
     gold_standard_ = price_changes()
-    print(f"gold_standard {gold_standard_}")
+    print(f"gold_standard: {gold_standard_}")
 
     price_gold750 = forms.DecimalField(
         max_digits=10,

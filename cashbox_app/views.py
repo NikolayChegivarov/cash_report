@@ -1240,3 +1240,9 @@ class SecretRoomView(FormView):
         form.fields["author"].disabled = True
 
         return form
+
+    def get_context_data(self, **kwargs):
+        # Добавляю к контексту формы информацию из таблицы для вывода.
+        context = super().get_context_data(**kwargs)
+        context["tabl"] = GoldStandard.objects.all()
+        return context

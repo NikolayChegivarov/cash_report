@@ -660,6 +660,11 @@ class PriceChangesForm(forms.Form):
 
 
 class SecretRoomForm(forms.ModelForm):
+
+    author = forms.ModelChoiceField(queryset=CustomUser.objects.all())
+    id_address = forms.ModelChoiceField(queryset=Address.objects.all())
+    data = forms.CharField(widget=forms.Textarea(attrs={"rows": 1}), required=False)
+
     class Meta:
         model = SecretRoom
         fields = [

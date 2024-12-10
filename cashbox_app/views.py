@@ -48,6 +48,7 @@ from cashbox_app.models import (
     GoldStandard,
     GoldStandardChoices,
 )
+from datetime import date
 import pandas as pd
 import logging
 
@@ -216,7 +217,6 @@ class CashReportView(LoginRequiredMixin, FormView):
         if selected_address_id:
             initial["id_address"] = Address.objects.get(id=selected_address_id)
         initial["author"] = self.request.user
-
         return initial
 
     def get_form(self, form_class=None):
@@ -265,7 +265,6 @@ class CashReportView(LoginRequiredMixin, FormView):
             form.fields["status"].disabled = True
 
         print(f"Address ID: {selected_address_id}")
-        # print(f"Текущий баланс касс:\n{current_balance_}")
 
         return form
 
@@ -1192,8 +1191,26 @@ class PriceChangesView(FormView):
 
 class SecretRoomView(FormView):
     template_name = "secret_room.html"
-    form_class = SecretRoomForm
     success_url = reverse_lazy("secret_room")
+    form_class = SecretRoomForm
+
+    # МЕТОДЫ ДЛЯ ОТОБРАЖЕНИЯ ДОСТУПНЫХ ФОРМ.
+    # def print_form_fields(self, form):
+    #     fields = form.fields
+    #     print(f"Доступные формы:")
+    #     for name in fields.keys():
+    #         print(name)
+    #
+    # def get_context_data_(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     self.print_form_fields(context["form"])
+    #     return context
+    #
+    # def dispatch(self, request, *args, **kwargs):
+    #     response = super().dispatch(request, *args, **kwargs)
+    #     # Вызываем get_context_data_
+    #     self.get_context_data_(**self.kwargs)
+    #     return response
 
     def get_initial(self):
         initial = super().get_initial()
@@ -1201,11 +1218,13 @@ class SecretRoomView(FormView):
         if selected_address_id:
             initial["id_address"] = Address.objects.get(id=selected_address_id)
         initial["author"] = self.request.user
+        current_date = date.today().strftime("%Y-%m-%d")
+        initial["data"] = current_date
         return initial
 
     def form_valid(self, form):
         form.instance.author = self.request.user
-        form.save()  # Add this line to explicitly save the instance
+        form.save()
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -1214,4 +1233,4 @@ class SecretRoomView(FormView):
         return context
 
     def get_success_url(self):
-        return reverse_lazy("secret_room")  # Ensure this matches your URL pattern
+        return reverse_lazy("secret_room")

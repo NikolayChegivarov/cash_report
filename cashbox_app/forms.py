@@ -622,7 +622,7 @@ class PriceChangesForm(forms.Form):
 
     def save(self):
         print(f"self.cleaned_data: {self.cleaned_data}")
-        print("Введенные данные:")
+        print("Обновленные данные:")
 
         # Словарь для хранения обновленных объектов.
         updated_objects = {}
@@ -703,3 +703,6 @@ class SecretRoomForm(forms.Form):
     sum = forms.DecimalField(
         max_digits=10, decimal_places=2, required=False, initial=0.00
     )
+
+    def save(self):
+        print(f"self.cleaned_data: {self.cleaned_data}")

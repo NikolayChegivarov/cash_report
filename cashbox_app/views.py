@@ -1169,8 +1169,8 @@ class SupervisorCashReportView(TemplateView):  # Не доделан.
 
 class PriceChangesView(FormView):
     template_name = "price_changes.html"
-    form_class = PriceChangesForm
     success_url = reverse_lazy("price_changes")
+    form_class = PriceChangesForm
 
     def get_context_data(self, **kwargs):
         # Добавляю к контексту формы информацию из таблицы для вывода.
@@ -1191,56 +1191,27 @@ class PriceChangesView(FormView):
 
 
 class SecretRoomView(FormView):
-    """Тайная комната."""
-
     template_name = "secret_room.html"
-
     form_class = SecretRoomForm
+    success_url = reverse_lazy("secret_room")
 
     def get_initial(self):
-        """
-        Функция для получения начальных значений данных формы.
-        Возвращает словарь с начальными значениями полей формы,
-        включая выбранный адрес и автора (текущего пользователя).
-        """
-        initial = {}
+        initial = super().get_initial()
         selected_address_id = self.request.session.get("selected_address_id")
         if selected_address_id:
             initial["id_address"] = Address.objects.get(id=selected_address_id)
         initial["author"] = self.request.user
-        print(self.request.user)
-
         return initial
 
-    def get_form(self, form_class=None):
-        """
-        Конфигурирует форму, отключая поля, которые не должны быть изменены.
-        """
-        # Получает экземпляр формы из родительского класса
-        form = super().get_form(form_class)
-
-        # Адрес для формы из сессии пользователя.
-        selected_address_id = self.request.session.get("selected_address_id")
-        if selected_address_id:
-            form.fields["id_address"].queryset = Address.objects.filter(
-                id=selected_address_id
-            )
-        else:
-            form.fields["id_address"].queryset = Address.objects.all()[:1]
-
-        address_id = selected_address_id
-
-        # Устанавливаю значения для полей.
-        form.initial["data"] = now().strftime("%Y-%m-%d")
-
-        # Отключаю поля для редактирования
-        form.fields["id_address"].disabled = True
-        form.fields["author"].disabled = True
-
-        return form
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        form.save()  # Add this line to explicitly save the instance
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
-        # Добавляю к контексту формы информацию из таблицы для вывода.
         context = super().get_context_data(**kwargs)
         context["tabl"] = GoldStandard.objects.all()
         return context
+
+    def get_success_url(self):
+        return reverse_lazy("secret_room")  # Ensure this matches your URL pattern

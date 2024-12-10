@@ -1203,7 +1203,6 @@ class SecretRoomView(FormView):
         Возвращает словарь с начальными значениями полей формы,
         включая выбранный адрес и автора (текущего пользователя).
         """
-        print("get_initial")
         initial = {}
         selected_address_id = self.request.session.get("selected_address_id")
         if selected_address_id:
@@ -1214,7 +1213,6 @@ class SecretRoomView(FormView):
         return initial
 
     def get_form(self, form_class=None):
-        print("get_form")
         """
         Конфигурирует форму, отключая поля, которые не должны быть изменены.
         """

@@ -541,6 +541,8 @@ def price_changes():
             latest_obj = obj_list.last()
             gold_standard[standard_type] = latest_obj.price_rubles
 
+    print(f"Актуальные цены: {gold_standard}")
+
     return gold_standard
 
 
@@ -567,7 +569,6 @@ class PriceChangesForm(forms.Form):
     """
 
     gold_standard_ = price_changes()
-    print(f"gold_standard: {gold_standard_}")
 
     price_gold750 = forms.DecimalField(
         max_digits=10,

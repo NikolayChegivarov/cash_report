@@ -302,9 +302,9 @@ class GoldStandard(models.Model):
 
 
 class LocationStatusChoices(models.TextChoices):
-    LOCAL = "LOCAL", "В ФИЛИАЛЕ"
-    GATHER = "GATHER", "СОБРАНО"
-    ISSUED = "ISSUED", "ВЫДАНО"
+    LOCAL = "В ФИЛИАЛЕ"
+    GATHER = "СОБРАНО"
+    ISSUED = "ВЫДАНО"
 
 
 class SecretRoom(models.Model):

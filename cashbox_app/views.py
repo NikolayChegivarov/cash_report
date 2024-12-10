@@ -47,6 +47,7 @@ from cashbox_app.models import (
     Schedule,
     GoldStandard,
     GoldStandardChoices,
+    SecretRoom,
 )
 from datetime import date
 import pandas as pd
@@ -1195,22 +1196,22 @@ class SecretRoomView(FormView):
     form_class = SecretRoomForm
 
     # МЕТОДЫ ДЛЯ ОТОБРАЖЕНИЯ ДОСТУПНЫХ ФОРМ.
-    # def print_form_fields(self, form):
-    #     fields = form.fields
-    #     print(f"Доступные формы:")
-    #     for name in fields.keys():
-    #         print(name)
-    #
-    # def get_context_data_(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     self.print_form_fields(context["form"])
-    #     return context
-    #
-    # def dispatch(self, request, *args, **kwargs):
-    #     response = super().dispatch(request, *args, **kwargs)
-    #     # Вызываем get_context_data_
-    #     self.get_context_data_(**self.kwargs)
-    #     return response
+    def print_form_fields(self, form):
+        fields = form.fields
+        print(f"Доступные формы:")
+        for name in fields.keys():
+            print(name)
+
+    def get_context_data_(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        self.print_form_fields(context["form"])
+        return context
+
+    def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
+        # Вызываем get_context_data_
+        self.get_context_data_(**self.kwargs)
+        return response
 
     def get_initial(self):
         initial = super().get_initial()
@@ -1229,8 +1230,8 @@ class SecretRoomView(FormView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["tabl"] = GoldStandard.objects.all()
-
+        context["GoldStandard"] = GoldStandard.objects.all()
+        context["SecretRoom"] = SecretRoom.objects.all()
         return context
 
     def get_success_url(self):

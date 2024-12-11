@@ -900,7 +900,14 @@ def format_time_expr(date_expr):
 
 
 class ScheduleReportView(TemplateView):
-    """Отчет по соблюдению расписания."""
+    """Отчет по соблюдению расписания.
+
+    Attributes:
+        template_name (str): Имя шаблона для отображения формы.
+
+    Methods:
+        get():
+    """
 
     template_name = "schedule_report.html"
 
@@ -982,36 +989,34 @@ class ScheduleReportView(TemplateView):
                     "days_of_week": days_of_week,
                 }
             )
-
         return render(request, self.template_name)
 
 
 class CountVisitsView(TemplateView):
-    """Фильтрация по дате, выбор версии отчета."""
+    """Фильтрация по дате, выбор версии отчета.
+
+    Attributes:
+        template_name (str): Имя шаблона для отображения формы.
+
+    Methods:
+        dispatch(): Метод dispatch является отправной точкой для всех запросов в представлении класса.
+        Применяя декоратор к этому методу, мы обеспечиваем, что проверка CSRF будет
+        выполняться для всех типов запросов (GET, POST и т.д.).
+        get(): Создает экземпляр формы YearMonthForm и передает его в шаблон.
+        post(): Отправляет введенные данные, перенаправляет пользователя на выбранную версию отчета.
+    """
 
     template_name = "count_visits.html"
 
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
-        """
-        Метод dispatch является отправной точкой для всех запросов в представлении класса.
-        Применяя декоратор к этому методу, мы обеспечиваем, что проверка CSRF будет
-        выполняться для всех типов запросов (GET, POST и т.д.).
-        """
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        """
-        Создает экземпляр формы YearMonthForm и передает его в шаблон.
-        """
         form = YearMonthForm()
         return self.render_to_response({"form": form})
 
     def post(self, request, *args, **kwargs):
-        """
-        Отправляет введенные данные, перенаправляет
-        пользователя на выбранную версию отчета.
-        """
         print("Отправляем данные методом post:")
         form = YearMonthForm(request.POST)
 
@@ -1039,7 +1044,10 @@ class CountVisitsView(TemplateView):
 
 
 class CountVisitsBriefView(TemplateView):
-    """Выводит пользователю краткий отчет"""
+    """
+    Выводит пользователю краткий отчет посещения
+    сотрудниками конкретного филиала в указанный период.
+    """
 
     template_name = "count_visits_brief.html"
 
@@ -1097,14 +1105,14 @@ class CountVisitsBriefView(TemplateView):
 
 
 class CountVisitsFullView(TemplateView):
-    """Выводит пользователю полный отчет"""
+    """
+    Выводит пользователю полный отчет посещения
+    сотрудниками конкретного филиала в указанный период.
+    """
 
     template_name = "count_visits_full.html"
 
     def get_context_data(self, **kwargs):
-        """
-        Отчет показывает в какие дни работал сотрудник в указанный период.
-        """
         # Вызываем метод родительского класса для получения начального контекста
         context = super().get_context_data(**kwargs)
 
@@ -1168,50 +1176,58 @@ class SupervisorCashReportView(TemplateView):  # Не доделан.
 
 
 class PriceChangesView(FormView):
+    """
+    Для отображения формы изменения цен.
+
+    Attributes:
+        template_name (str): Имя шаблона для отображения формы.
+        success_url (str): URL для перенаправления после успешной отправки формы.
+        form_class (Form): Класс формы для отображения.
+
+    Methods:
+        get_context_data(): Добавляет информацию из таблицы GoldStandard в контекст формы.
+        form_valid(): Вызывается при корректной отправке формы. Сохраняет форму и перенаправляет на success_url.
+        form_invalid(): Вызывается при некорректной отправке формы. Выводит ошибки формы.
+    """
+
     template_name = "price_changes.html"
     success_url = reverse_lazy("price_changes")
     form_class = PriceChangesForm
 
     def get_context_data(self, **kwargs):
-        # Добавляю к контексту формы информацию из таблицы для вывода.
         context = super().get_context_data(**kwargs)
         context["tabl"] = GoldStandard.objects.all()
         return context
 
     def form_valid(self, form):
-        # Этот метод будет вызван, если форма действительна.
-        result = form.save()
-        print("Попытка сохранить.")
+        form.save()
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        # Этот метод будет вызван, если форма недействительна.
         print("Форма невалидна:", form.errors)
         return super().form_invalid(form)
 
 
 class SecretRoomView(FormView):
+    """
+    Реализует логику для создания SecretRoom.
+
+    Attributes:
+        template_name (str): Имя шаблона для отображения формы.
+        success_url (str): URL, на который пользователь будет перенаправлен
+            после успешной отправки формы.
+        form_class (type): Класс формы для представления.
+
+    Methods:
+        get_initial(): Добавляет начальные значения в форму.
+        form_valid(): Обрабатывает валидную форму и сохраняет ее в базе данных.
+        get_context_data(): Добавляет дополнительные данные в контекст шаблона.
+        get_success_url(): Возвращает URL для перенаправления после успешного сохранения.
+    """
+
     template_name = "secret_room.html"
     success_url = reverse_lazy("secret_room")
     form_class = SecretRoomForm
-
-    # МЕТОДЫ ДЛЯ ОТОБРАЖЕНИЯ ДОСТУПНЫХ ФОРМ.
-    # def print_form_fields(self, form):
-    #     fields = form.fields
-    #     print(f"Доступные формы:")
-    #     for name in fields.keys():
-    #         print(name)
-    #
-    # def get_context_data_(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     self.print_form_fields(context["form"])
-    #     return context
-    #
-    # def dispatch(self, request, *args, **kwargs):
-    #     response = super().dispatch(request, *args, **kwargs)
-    #     # Вызываем get_context_data_
-    #     self.get_context_data_(**self.kwargs)
-    #     return response
 
     def get_initial(self):
         initial = super().get_initial()

@@ -1241,6 +1241,16 @@ class SecretRoomView(FormView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
+
+        selected_address_id = self.request.session.get("selected_address_id")
+        if selected_address_id:
+            try:
+                address = Address.objects.get(id=selected_address_id)
+                form.instance.id_address = address
+            except Address.DoesNotExist:
+                # Обработка случая, если адрес не найден
+                print(f"Адрес с id {selected_address_id} не найден.")
+
         form.save()
         return super().form_valid(form)
 

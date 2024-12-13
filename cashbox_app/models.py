@@ -311,6 +311,9 @@ class SecretRoom(models.Model):
     """Модель для тайной комнаты."""
 
     shift_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата смены")
+    id_address = models.ForeignKey(
+        Address, on_delete=models.CASCADE, verbose_name="Адрес"
+    )
     client = models.CharField(
         max_length=50, default="Новый клиент", verbose_name="Клиент"
     )
@@ -333,7 +336,7 @@ class SecretRoom(models.Model):
     sum = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="Выдано денег"
     )
-    status = models.GoldStandard = models.CharField(
+    status = models.CharField(
         max_length=15,
         choices=LocationStatusChoices.choices,
         default=LocationStatusChoices.LOCAL,

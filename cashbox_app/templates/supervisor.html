@@ -6,31 +6,32 @@
     <title>Выбор отчета</title>
     <style>
         body {
-            /* Устанавливает фоновое изображение для всего тела */
             background-image: url('{% static "cashbox_app/table.jpg" %}');
-            background-size: 100% auto;  /* Устанавливает размер фона */
-            background-repeat: no-repeat;  /* Запрещает повторение фона */
-            background-position: center;  /* Устанавливает позицию фона */
-            height: 100vh;  /* Устанавливает высоту тела */
-            margin: 0;  /* Устанавливает отступы сверху и снизу */
-            padding: 20px;  /* Добавляет отступы слева и справа */
+            background-size: 100% auto;
+            background-repeat: no-repeat;
+            background-position: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
         }
         .headers {
-            position: fixed;  /* Устанавливает элемент в фиксированное положение относительно окна браузера */
-            top: 20px;  /* Отступ сверху от верхней границы окна браузера */
-            left: 20px;  /* Отступ слева от левой границы окна браузера */
-            z-index: 1000;  /* 1000 гарантирует, что этот элемент будет отображаться поверх других элементов. */
+            position: fixed;
+            top: 10%;
+            left: 5%;
+            z-index: 1000;
         }
-
-        .buttons {
-            position: fixed;  /* Устанавливает элемент в фиксированное положение относительно окна браузера */
-            bottom: 850px;  /* Отступ от нижней части. */
-            left: 20px;  /* Устанавливает левое позиционирование элемента от края страницы. */
-            z-index: 1000;  /* 1000 гарантирует, что этот элемент будет отображаться поверх других элементов. */
-            font-size: 16px;  /* размер шрифта элемента */
-            padding: 10px 20px;  /* отступы вокруг элемента: Верхний и нижний 10: Левый и правый 20 */
-            border-radius: 8px;  /* закругленные углы к элементу с радиусом 8 пикселей */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);  /* добавить тени */
+        .buttons {   /* Поле кнопок. */
+            position: fixed;
+            bottom: 10%;
+            left: 5%;
+            z-index: 1000;
+            font-size: 16px;
+            padding: 5px 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .buttons button {
+            cursor: pointer;  Изменить форму курсора при наведении */
         }
     </style>
 </head>
@@ -42,8 +43,8 @@
     </div>
     <div class="buttons">
         <button onclick="window.location.href='{% url 'supervisor_cash_report' %}'">Кассовый отчет</button>
-        <button onclick="window.location.href='{% url 'count_visits' %}'">Количество посещений</button>
-        <button onclick="window.location.href='{% url 'schedule' %}'">Расписание</button>
+        <button onclick="window.location.href='{% url 'count_visits' %}'">Количество смен</button>
+        <button onclick="window.location.href='{% url 'schedule' %}'">Соблюдение расписания</button>
         <button onclick="window.location.href='{% url 'price_changes'%}'">Установить цены</button>
     </div>
 </body>

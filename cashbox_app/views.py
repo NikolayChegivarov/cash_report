@@ -1259,7 +1259,7 @@ class SecretRoomView(FormView):
         context = super().get_context_data(**kwargs)
         context["GoldStandard"] = GoldStandard.objects.all()
         context["SecretRoom"] = SecretRoom.objects.filter(
-            id_address=selected_address_id, status="LOCAL"
+            id_address=selected_address_id
         )
         print(f"context: {context}")
         return context

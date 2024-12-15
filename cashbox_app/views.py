@@ -1258,6 +1258,7 @@ class SecretRoomView(FormView):
         context = super().get_context_data(**kwargs)
         context["GoldStandard"] = GoldStandard.objects.all()
         context["SecretRoom"] = SecretRoom.objects.all()
+        print(f"context: {context}")
         return context
 
     def get_success_url(self):

@@ -33,6 +33,8 @@ from cashbox_app.views import (
     ScheduleReportView,
     SecretRoomView,
     PriceChangesView,
+    HarvestView,
+    HarvestPrintViews,
 )
 
 urlpatterns = [
@@ -89,4 +91,14 @@ urlpatterns = [
         SecretRoomView.as_view(),
         name="secret_room",
     ),  # Тайная комната
+    path(
+        "harvest/",
+        HarvestView.as_view(),
+        name="harvest",
+    ),  # Собрать урожай
+    path(
+        "harvest/views",
+        HarvestPrintViews.as_view(),
+        name="harvest_views",
+    ),  # Собрать урожай
 ]

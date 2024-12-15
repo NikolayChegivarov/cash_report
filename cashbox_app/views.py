@@ -1255,9 +1255,12 @@ class SecretRoomView(FormView):
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
+        selected_address_id = self.request.session.get("selected_address_id")
         context = super().get_context_data(**kwargs)
         context["GoldStandard"] = GoldStandard.objects.all()
-        context["SecretRoom"] = SecretRoom.objects.all()
+        context["SecretRoom"] = SecretRoom.objects.filter(
+            id_address=selected_address_id
+        )
         print(f"context: {context}")
         return context
 

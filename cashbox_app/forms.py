@@ -706,3 +706,5 @@ class SecretRoomForm(forms.ModelForm):
             "weight_fact": "Фактический вес",
             "sum": "Выдано денег",
         }
+
+# апра

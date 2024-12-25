@@ -1,13 +1,15 @@
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login, authenticate
-from django.http import Http404, HttpResponse
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import Http404
 from django.shortcuts import render, redirect
 from django.views import View
 from django.views.generic import FormView, TemplateView
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
+from django.utils import timezone
 from django.urls import reverse_lazy, reverse
 from django.db.models import Prefetch
 from django.db.models import Count
@@ -46,12 +48,12 @@ from cashbox_app.models import (
     CustomUser,
     Schedule,
     GoldStandard,
-    GoldStandardChoices,
     SecretRoom,
 )
 from datetime import date
 import pandas as pd
 import logging
+from django.db import transaction
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -278,7 +280,7 @@ class CashReportView(LoginRequiredMixin, FormView):
         form = self.get_form()
         if form.is_valid():
             print("Попытка сохранить.")
-            result = form.save()
+            form.save()
             return self.form_valid(form)
         else:
             print("Форма невалидна:", form.errors)
@@ -498,7 +500,7 @@ class ReportSubmittedView(FormView):
 
                 if cash_report:
                     print("Обновляем данные в бд перед закрытием.")
-                    result = form.save()
+                    form.save()
                     print("\nИзменяем статус на CLOSED")
                     CashReport.objects.filter(
                         id__in=cash_report.values_list("id")
@@ -555,7 +557,7 @@ class CorrectedView(FormView):
         form = self.get_form()
         if form.is_valid():
             print(f"{request.user} сохраняет корректировку.")
-            result = form.save()
+            form.save()
             return self.form_valid(form)
         else:
             print("Форма невалидна:", form.errors)
@@ -869,7 +871,7 @@ class ScheduleView(TemplateView):
         context = {"form": form}
         return self.render_to_response(context)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         form = self.form_class(request.POST)
         if request.POST.get("action") == "Получить отчет":
             if form.is_valid():
@@ -1016,7 +1018,7 @@ class CountVisitsView(TemplateView):
         form = YearMonthForm()
         return self.render_to_response({"form": form})
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         print("Отправляем данные методом post:")
         form = YearMonthForm(request.POST)
 
@@ -1175,6 +1177,11 @@ class SupervisorCashReportView(TemplateView):  # Не доделан.
     template_name = "supervisor_cash_report.html"
 
 
+def extract_and_convert(key):
+    value_part = key.split('_')[1]
+    return int(value_part)
+
+
 class PriceChangesView(FormView):
     """
     Для отображения формы изменения цен.
@@ -1194,14 +1201,30 @@ class PriceChangesView(FormView):
     success_url = reverse_lazy("price_changes")
     form_class = PriceChangesForm
 
+    def form_valid(self, form):
+        cleaned_data = form.cleaned_data
+        print(f'Получены данные от пользователя: {cleaned_data}')
+
+        with transaction.atomic():
+            for key, value in cleaned_data.items():
+                if key.startswith(('gold_', 'silver_')):
+                    numeric_key = extract_and_convert(key)
+                    try:
+                        instance = GoldStandard.objects.get(gold_standard=numeric_key)
+                        update_fields = ['price_rubles', 'shift_date']
+                        instance.price_rubles = float(value)
+                        instance.shift_date = timezone.now()
+                        instance.save(update_fields=update_fields)
+                        print(f"Обновленная цена {value} для пробы {numeric_key}.")
+                    except GoldStandard.DoesNotExist:
+                        print(f"Записи не найдены для {numeric_key}, пропуск")
+
+        return super().form_valid(form)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["tabl"] = GoldStandard.objects.all()
         return context
-
-    def form_valid(self, form):
-        form.save()
-        return super().form_valid(form)
 
     def form_invalid(self, form):
         print("Форма невалидна:", form.errors)
@@ -1247,7 +1270,7 @@ class SecretRoomView(FormView):
             try:
                 address = Address.objects.get(id=selected_address_id)
                 form.instance.id_address = address
-            except Address.DoesNotExist:
+            except ObjectDoesNotExist:
                 # Обработка случая, если адрес не найден
                 print(f"Адрес с id {selected_address_id} не найден.")
 

@@ -1,9 +1,3 @@
-from datetime import datetime, timedelta
-from django import forms
-from django.contrib.auth.forms import AuthenticationForm
-from decimal import Decimal
-from django.shortcuts import render
-from django.utils.timezone import now
 from cashbox_app.models import (
     Address,
     CashReport,
@@ -11,9 +5,13 @@ from cashbox_app.models import (
     CashReportStatusChoices,
     CashRegisterChoices,
     SecretRoom,
-    GoldStandardChoices,
-    GoldStandard,
+    GoldStandard, GoldStandardChoices,
 )
+from datetime import datetime, timedelta
+from django import forms
+from django.contrib.auth.forms import AuthenticationForm
+from decimal import Decimal
+from django.utils.timezone import now
 
 
 class CustomAuthenticationForm(AuthenticationForm):
@@ -56,7 +54,7 @@ class AddressSelectionForm(forms.Form):
     )
 
 
-def calculate_cash_register_end(self, cleaned_data, register_type):
+def calculate_cash_register_end(cleaned_data, register_type):
     """Функция для подсчета баланса с учетом изменений."""
     fields = [
         f"cash_balance_beginning_{register_type}",
@@ -71,73 +69,6 @@ def calculate_cash_register_end(self, cleaned_data, register_type):
     total -= sum(float(cleaned_data.get(field, 0)) for field in fields[3:])
 
     cleaned_data[f"cash_register_end_{register_type}"] = round(total, 2)
-
-
-# class CashReportForm(forms.ModelForm):
-#     """Форма для внесения изменений в кассовых балансах."""
-#
-#     def __init__(self, *args, **kwargs):
-#         """Добавляем обработку для поля cas_register."""
-#         super().__init__(*args, **kwargs)
-#         self.fields["cas_register"].widget.attrs["onclick"] = "this.checked=true;"
-#
-#     class Meta:
-#         model = CashReport
-#         fields = [
-#             "author",
-#             "id_address",
-#             "cas_register",
-#             "cash_balance_beginning",
-#             "introduced",
-#             "interest_return",
-#             "loans_issued",
-#             "used_farming",
-#             "boss_took_it",
-#             "cash_register_end",
-#             "status",
-#         ]
-#         widgets = {
-#             "id_address": forms.Select(attrs={"readonly": "readonly"}),
-#             "author": forms.TextInput(attrs={"readonly": "readonly"}),
-#         }
-#
-#     def clean(self):
-#         """
-#         Метод очистки данных формы.
-#
-#         Этот метод выполняет дополнительную валидацию данных формы после стандартной валидации,
-#         предоставляемой базовым классом forms.Form или его подклассами.
-#
-#         Основные функции метода:
-#
-#         1. Вызывает метод clean() родительского класса для выполнения стандартной валидации.
-#         2. Проверяет наличие значений для обязательных полей.
-#         3. Проверяет наличие значений для всех полей формы.
-#         4. Возвращает очищенные данные, если они проходят проверку.
-#
-#         При обнаружении отсутствующих значений для обязательных полей или пустых полей
-#         вызывается исключение ValidationError с соответствующим сообщением об ошибке.
-#
-#         :return: Очищенные данные формы (словарь)
-#         """
-#         cleaned_data = super().clean()
-#
-#         # Проверяем, что все обязательные поля заполнены
-#         required_fields = ["author", "id_address", "cas_register"]
-#         for field_name in required_fields:
-#             if not cleaned_data.get(field_name):
-#                 raise forms.ValidationError(
-#                     f"Обязательное поле '{field_name}' не заполнено."
-#                 )
-#
-#         # Остальная часть валидации...
-#         for field_name in self.fields.keys():
-#             if not cleaned_data.get(field_name):
-#                 raise forms.ValidationError(
-#                     f"Поле '{field_name}' не должно быть пустым."
-#                 )
-#
-#         return cleaned_data
 
 
 class MultiCashReportForm(forms.Form):
@@ -387,7 +318,7 @@ class MultiCashReportForm(forms.Form):
                 technique_report.save()
                 print(f"Technique report создан: {technique_report}")
 
-            print("Все отчеты успешно сохранены или обновлены.")
+            print("\nВсе отчеты успешно сохранены или обновлены.")
 
         except Exception as e:
             print(f"Ошибка при сохранении данных: {e}")
@@ -395,11 +326,11 @@ class MultiCashReportForm(forms.Form):
     def clean(self):
         cleaned_data = super().clean()
         # Расчет для покупок
-        calculate_cash_register_end(self, cleaned_data, "buying_up")
+        calculate_cash_register_end(cleaned_data, "buying_up")
         # Расчет для ломбарда
-        calculate_cash_register_end(self, cleaned_data, "pawnshop")
+        calculate_cash_register_end(cleaned_data, "pawnshop")
         # Расчет для техники
-        calculate_cash_register_end(self, cleaned_data, "technique")
+        calculate_cash_register_end(cleaned_data, "technique")
         return cleaned_data
 
 
@@ -471,6 +402,18 @@ class YearMonthForm(forms.Form):
         year = cleaned_data.get("year")
         month = cleaned_data.get("month")
 
+        if not isinstance(year, int) or not isinstance(month, int):
+            raise forms.ValidationError("Пожалуйста, введите целые числа для года и месяца.")
+
+        if year < self.fields["year"].min_value or year > self.fields["year"].max_value:
+            raise forms.ValidationError(
+                f"Год должен быть в диапазоне от {self.fields['year'].min_value} до {self.fields['year'].max_value}.")
+
+        if month < self.fields["month"].min_value or month > self.fields["month"].max_value:
+            raise forms.ValidationError(
+                f"Месяц должен быть в диапазоне от {self.fields['month'].min_value} до "
+                f"{self.fields['month'].max_value}.")
+
         return cleaned_data
 
 
@@ -523,19 +466,16 @@ def price_changes():
         Словарь, где ключи - пробы, значения - актуальные цены.
     """
     gold_standard = {
-        "gold750": None,
-        "goldN585": None,
-        "gold585": None,
-        "gold500": None,
-        "gold375": None,
-        "silvers925": None,
-        "silvers875": None,
+        GoldStandardChoices.GOLD750: None,
+        GoldStandardChoices.GOLD585: None,
+        GoldStandardChoices.GOLD500: None,
+        GoldStandardChoices.GOLD375: None,
+        GoldStandardChoices.SILVER925: None,
+        GoldStandardChoices.SILVER875: None,
     }
 
     for standard_type in gold_standard.keys():
-        obj_list = GoldStandard.objects.filter(gold_standard=standard_type).order_by(
-            "shift_date"
-        )
+        obj_list = GoldStandard.objects.filter(gold_standard=standard_type).order_by("shift_date")
 
         if obj_list:
             latest_obj = obj_list.last()
@@ -547,116 +487,54 @@ def price_changes():
 
 
 class PriceChangesForm(forms.Form):
-    """
-    PriceChangesForm - класс для создания формы ввода цен на ювелирные изделия б/у.
-
-    Форма содержит поля для ввода цен на лом в разрезе проб.
-    Поля заполняются данными из функции price_changes(), которая получает актуальные цены.
-
-    Структура класса:
-    1. Инициализация данных формы через вызов функции price_changes()
-    2. Создание полей формы для каждого типа стандарта (золото 750, 585, 500, 375,
-       серебро 925, 875) с использованием DecimalField
-    3. Метод save() для обработки сохранения измененных данных формы
-
-    Метод save():
-    - Принимает данные формы после ее отправки
-    - Итерирует по полям формы
-    - Если значение поля отличается от начального значения:
-      - Создает новый объект GoldStandard или обновляет существующий
-      - Сохраняет обновленные данные в базу данных
-      - Добавляет информацию о том, было ли поле изменено или добавлено новый объект
-    """
-
-    gold_standard_ = price_changes()
-
-    price_gold750 = forms.DecimalField(
+    gold_375 = forms.DecimalField(
         max_digits=10,
         decimal_places=2,
         required=False,
-        initial=gold_standard_["gold750"],
-        label="золото 750",
-    )
-    price_goldN585 = forms.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        required=False,
-        initial=gold_standard_["goldN585"],
-        label="Не стандарт",
-    )
-    price_gold585 = forms.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        required=False,
-        initial=gold_standard_["gold585"],
-        label="золото 585",
-    )
-    price_gold500 = forms.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        required=False,
-        initial=gold_standard_["gold500"],
-        label="золото 500",
-    )
-    price_gold375 = forms.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        required=False,
-        initial=gold_standard_["gold375"],
+        initial=GoldStandard.objects.filter(gold_standard=375).first().price_rubles if GoldStandard.objects.filter(
+            gold_standard=375).exists() else None,
         label="золото 375",
     )
-    price_silvers925 = forms.DecimalField(
+    gold_500 = forms.DecimalField(
         max_digits=10,
         decimal_places=2,
         required=False,
-        initial=gold_standard_["silvers925"],
-        label="серебро 925",
+        initial=GoldStandard.objects.filter(gold_standard=500).first().price_rubles if GoldStandard.objects.filter(
+            gold_standard=500).exists() else None,
+        label="золото 500",
     )
-    price_silvers875 = forms.DecimalField(
+    gold_585 = forms.DecimalField(
         max_digits=10,
         decimal_places=2,
         required=False,
-        initial=gold_standard_["silvers875"],
+        initial=GoldStandard.objects.filter(gold_standard=585).first().price_rubles if GoldStandard.objects.filter(
+            gold_standard=585).exists() else None,
+        label="золото 585",
+    )
+    gold_750 = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        initial=GoldStandard.objects.filter(gold_standard=750).first().price_rubles if GoldStandard.objects.filter(
+            gold_standard=750).exists() else None,
+        label="золото 750",
+    )
+    silver_875 = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        initial=GoldStandard.objects.filter(gold_standard=875).first().price_rubles if GoldStandard.objects.filter(
+            gold_standard=875).exists() else None,
         label="серебро 875",
     )
-
-    def save(self):
-        print(f"self.cleaned_data: {self.cleaned_data}")
-        print("Обновленные данные:")
-
-        # Словарь для хранения обновленных объектов.
-        updated_objects = {}
-
-        # Итерация по каждому полю в cleaning_data.
-        for field_name, value in self.cleaned_data.items():
-            if value != 0.00:
-                # Проверяем, было ли изменено поле.
-                initial_value = getattr(self.fields[field_name], "initial", None)
-                if initial_value != value:
-                    gold_standard = GoldStandard()
-                    try:
-                        gold_standard.shift_date = now()
-                        gold_standard.gold_standard = field_name.split("_")[1]
-                        gold_standard.price_rubles = Decimal(value)
-
-                        # Обновлять только если объект существует.
-                        obj = GoldStandard.objects.filter(
-                            gold_standard=field_name.split("_")[1]
-                        ).first()
-                        if obj:
-                            obj.price_rubles = Decimal(value)
-                            obj.shift_date = now()  # Обновить shift_date.
-                            obj.save()
-                            updated_objects[field_name] = f"{value} (Updated)"
-                        else:
-                            gold_standard.save()
-                            updated_objects[field_name] = f"{value} (New)"
-                    except Exception as e:
-                        print(f"Failed to save record for {field_name}: {e}")
-
-        # Распечатать обновленные объекты.
-        for field, status in updated_objects.items():
-            print(f"{field}: {status}")
+    silver_925 = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        initial=GoldStandard.objects.filter(gold_standard=925).first().price_rubles if GoldStandard.objects.filter(
+            gold_standard=925).exists() else None,
+        label="серебро 925",
+    )
 
 
 class SecretRoomForm(forms.ModelForm):
@@ -667,7 +545,7 @@ class SecretRoomForm(forms.ModelForm):
 
     class Meta:
         model = SecretRoom
-        fields = [
+        fields = [  # Поля.
             "client",
             "nomenclature",
             "gold_standard",
@@ -676,7 +554,7 @@ class SecretRoomForm(forms.ModelForm):
             "weight_fact",
             "sum",
         ]
-        widgets = {
+        widgets = {  # Виджеты.
             "client": forms.TextInput(
                 attrs={
                     "class": "form-control",
@@ -697,7 +575,7 @@ class SecretRoomForm(forms.ModelForm):
             "weight_fact": forms.NumberInput(attrs={"class": "form-control"}),
             "sum": forms.NumberInput(attrs={"class": "form-control"}),
         }
-        labels = {
+        labels = {  # Ярлыки.
             "client": "Клиент",
             "nomenclature": "Наименование",
             "gold_standard": "Проба",
@@ -706,5 +584,3 @@ class SecretRoomForm(forms.ModelForm):
             "weight_fact": "Фактический вес",
             "sum": "Выдано денег",
         }
-
-# апра

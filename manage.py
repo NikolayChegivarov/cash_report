@@ -6,7 +6,7 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'multiplayer_mode.settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cash_project.settings')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

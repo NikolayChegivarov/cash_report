@@ -5,6 +5,8 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 
+from functions import probe_converter_gold, probe_converter_silver
+
 
 class Address(models.Model):
     """Модель с адресами."""
@@ -13,10 +15,15 @@ class Address(models.Model):
     street = models.CharField(max_length=100, verbose_name="Улица")
     home = models.CharField(max_length=10, verbose_name="Номер дома")
 
+    objects = models.Manager()
+
     def __str__(self):
         return f"{self.city}, {self.street}, {self.home}"
 
     class Meta:
+        db_table = "addresses"
+        verbose_name = "Адрес"
+        verbose_name_plural = "Адреса"
         ordering = ["city", "street", "home"]
 
 
@@ -42,13 +49,22 @@ class Schedule(models.Model):
         blank=True,
     )
     day_of_week = models.CharField(
-        max_length=9, choices=DAYS_OF_WEEK, verbose_name="День недели"
+        max_length=9,
+        choices=DAYS_OF_WEEK,
+        verbose_name="День недели"
     )
     opening_time = models.TimeField(verbose_name="Время открытия")
     closing_time = models.TimeField(verbose_name="Время закрытия")
 
+    objects = models.Manager()
+
     def __str__(self):
-        return f"{self.get_day_of_week_display()}: {self.opening_time} - {self.closing_time}"
+        return f"{self.day_of_week}: {self.opening_time} - {self.closing_time}"
+
+    class Meta:
+        db_table = "schedule"
+        verbose_name = "Расписание"
+        ordering = ["address"]
 
 
 class CustomUserManager(BaseUserManager):  # Переопределяю методы для CustomUser
@@ -59,27 +75,19 @@ class CustomUserManager(BaseUserManager):  # Переопределяю мето
 
     def create_user(self, username, password=None, **extra_fields):
         """Создает нового пользователя."""
-        fields = (
-            "username",
-            "email",
-            "last_name",
-            "first_name",
-            "patronymic",
-            "is_active",
-            "is_staff",
-            "is_superuser",
-            "groups",
-            "user_permissions",
-        )
         # Проверка наличия username, если его нет, выбрасывается исключение
         if not username:
             raise ValueError("Поле Имя пользователя должно быть установлено")
+
         # Создание экземпляра пользователя с заданными параметрами.
         user = self.model(username=username, **extra_fields)
+
         # Установка пароля для пользователя
         user.set_password(password)
+
         # Сохранение пользователя в базе данных
         user.save(using=self._db)
+
         # Возвращение созданного пользователя
         return user
 
@@ -102,6 +110,7 @@ class CustomUserManager(BaseUserManager):  # Переопределяю мето
         extra_fields.setdefault(
             "is_superuser", True
         )  # по умолчанию пользователь не является суперпользователем.
+
         # Вызов метода create_user для создания суперпользователя с заданными параметрами
         return self.create_user(username, password, **extra_fields)
 
@@ -140,7 +149,15 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = "username"  # Изменено на 'username'
 
     def __str__(self):
-        return self.username
+        return (
+            f"{self.username}"
+        )
+
+    class Meta:
+        db_table = "custom_user"
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
+        ordering = ["username"]
 
 
 class CashRegisterChoices(models.TextChoices):
@@ -240,19 +257,7 @@ class CashReport(models.Model):
         default=CashReportStatusChoices.OPEN,
     )
 
-    class Meta:
-        unique_together = (
-            "shift_date",
-            "id_address",
-            "cas_register",
-            "cash_balance_beginning",
-            "introduced",
-            "interest_return",
-            "loans_issued",
-            "used_farming",
-            "boss_took_it",
-            "cash_register_end",
-        )
+    objects = models.Manager()
 
     def __str__(self):
         fields = [
@@ -272,33 +277,60 @@ class CashReport(models.Model):
         ]
         return "\n".join(fields)
 
+    class Meta:
+        unique_together = (
+            "shift_date",
+            "id_address",
+            "cas_register",
+            "cash_balance_beginning",
+            "introduced",
+            "interest_return",
+            "loans_issued",
+            "used_farming",
+            "boss_took_it",
+            "cash_register_end",
+        )
+        db_table = "cash_report"
+        verbose_name = "Кассовый отчет"
+        verbose_name_plural = "Кассовый отчеты"
+        ordering = ["shift_date"]
 
-class GoldStandardChoices(models.TextChoices):
+
+class GoldStandardChoices(models.IntegerChoices):
     """Разновидность пробы."""
 
-    gold750 = "750gold", "750gold"
-    goldN585 = "585goldN", "Не стандарт"
-    gold585 = "585gold", "585gold"
-    gold500 = "500gold", "500gold"
-    gold375 = "375gold", "375gold"
-    silvers925 = "925silvers", "925silvers"
-    silvers875 = "875silvers", "875silvers"
+    GOLD750 = 750, "ЗОЛОТО 750"
+    GOLD585 = 585, "ЗОЛОТО 585"
+    GOLD500 = 500, "ЗОЛОТО 500"
+    GOLD375 = 375, "ЗОЛОТО 375"
+    SILVER925 = 925, "СЕРЕБРО 925"
+    SILVER875 = 875, "СЕРЕБРО 875"
 
 
 class GoldStandard(models.Model):
     """Цена на металл."""
 
-    shift_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата смены")
-    gold_standard = models.CharField(
-        max_length=10,
+    shift_date = models.DateTimeField(auto_now=True, verbose_name="Дата изменения цены")
+    gold_standard = models.IntegerField(
         choices=GoldStandardChoices.choices,
+        default=GoldStandardChoices.GOLD585,
+        verbose_name="Проба",
     )
     price_rubles = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="Цена в рублях"
     )
 
-    # class Meta:
-    #     db_table = "goldstandard"  # Задаю название в бд
+    objects = models.Manager()
+
+    def __str__(self):
+        return (
+            f"Значение пробы {self.gold_standard} стоимость {self.price_rubles} рублей"
+        )
+
+    class Meta:
+        db_table = "gold_standard"
+        verbose_name = "Цена на лом"
+        ordering = ["gold_standard"]
 
 
 class LocationStatusChoices(models.TextChoices):
@@ -318,10 +350,9 @@ class SecretRoom(models.Model):
         max_length=50, default="Новый клиент", verbose_name="Клиент"
     )
     nomenclature = models.CharField(max_length=50, verbose_name="Наименование")
-    gold_standard = models.CharField(
-        max_length=15,
+    gold_standard = models.IntegerField(
         choices=GoldStandardChoices.choices,
-        default="gold585",
+        default=GoldStandardChoices.GOLD585,
         verbose_name="Проба",
     )
     price = models.DecimalField(
@@ -336,6 +367,23 @@ class SecretRoom(models.Model):
     sum = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="Выдано денег"
     )
+    converter585 = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        verbose_name="Конвертер 585 проба",
+    )
+    converter925 = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        verbose_name="Конвертер 925 проба",
+    )
+    not_standard = models.BooleanField(
+        default=False, null=True, blank=True, verbose_name="Не стандарт"
+    )
     status = models.CharField(
         max_length=15,
         choices=LocationStatusChoices.choices,
@@ -349,3 +397,41 @@ class SecretRoom(models.Model):
         blank=False,
         null=True,
     )
+
+    objects = models.Manager()
+
+    def __str__(self):
+        return (
+            f"Скупка {self.id}: "
+            f"Адрес: {self.id_address}, Клиент: {self.client}, "
+            f"Наименование: {self.nomenclature}, Проба: {self.gold_standard}, "
+            f"Цена: {self.price} руб., Чистый вес: {self.weight_clean} г., "
+            f"Фактический вес: {self.weight_fact} г., Выдано денег: {self.sum} руб., "
+            f"В 585 пробе: {self.converter585}, В 925 пробе: {self.converter925}, "
+            f"Не стандарт: {self.not_standard}, Статус скупки: {self.status}, "
+            f"Автор: {self.author}"
+        )
+
+    class Meta:
+        db_table = "secret_poom"
+        verbose_name = "Скупка"
+        verbose_name_plural = "Скупки"
+        ordering = ["id_address"]
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        gold_standards = (750, 585, 500, 375)
+        silver_standards = (925, 875)
+
+        if self.gold_standard in gold_standards:
+            self.converter585 = probe_converter_gold(
+                self.weight_clean, self.gold_standard
+            )
+        elif self.gold_standard in silver_standards:
+            self.converter925 = probe_converter_silver(
+                self.weight_clean, self.gold_standard
+            )
+
+        # Сохраняем модель еще раз, чтобы обновить новые поля.
+        self.save()

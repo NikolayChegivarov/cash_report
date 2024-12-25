@@ -1203,21 +1203,32 @@ class PriceChangesView(FormView):
 
     def form_valid(self, form):
         cleaned_data = form.cleaned_data
-        print(f'Получены данные от пользователя: {cleaned_data}')
+        logger.info(f'Получены данные от пользователя: {cleaned_data}')
 
         with transaction.atomic():
             for key, value in cleaned_data.items():
                 if key.startswith(('gold_', 'silver_')):
                     numeric_key = extract_and_convert(key)
                     try:
-                        instance = GoldStandard.objects.get(gold_standard=numeric_key)
-                        update_fields = ['price_rubles', 'shift_date']
-                        instance.price_rubles = float(value)
-                        instance.shift_date = timezone.now()
-                        instance.save(update_fields=update_fields)
-                        print(f"Обновленная цена {value} для пробы {numeric_key}.")
+                        instance, created = GoldStandard.objects.get_or_create(
+                            gold_standard=numeric_key,
+                            defaults={'price_rubles': None, 'shift_date': timezone.now()}
+                        )
+                        if created:
+                            logger.info(f"Создана новая запись для пробы {numeric_key}.")
+                        else:
+                            logger.info(f"Обновлена цена {value} для пробы {numeric_key}.")
+
+                            # Check if value is None before converting to float
+                            if value is not None:
+                                instance.price_rubles = float(value)
+                            else:
+                                logger.warning(f"Получен None значение для цены для пробы {numeric_key}, пропуск.")
+
+                            instance.shift_date = timezone.now()
+                            instance.save(update_fields=['price_rubles', 'shift_date'])
                     except GoldStandard.DoesNotExist:
-                        print(f"Записи не найдены для {numeric_key}, пропуск")
+                        logger.error(f"Записи не найдены для {numeric_key}, создание нового записи.")
 
         return super().form_valid(form)
 
